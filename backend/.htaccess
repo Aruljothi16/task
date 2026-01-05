@@ -1,0 +1,16 @@
+RewriteEngine On
+RewriteBase /Task-management/backend/
+
+# Handle API routes
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^api/(.*)$ index.php [QSA,L]
+
+# Allow access to index.php directly
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^index\.php$ - [L]
+
+
+
+
+
