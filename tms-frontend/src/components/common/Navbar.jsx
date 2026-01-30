@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { Moon, Sun, Palette, LogOut } from 'lucide-react';
+import NotificationBell from './NotificationBell';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -44,6 +45,8 @@ const Navbar = () => {
           </button>
         </div>
 
+        <NotificationBell />
+
         <span className="user-info">
           {user?.full_name} <span style={{ opacity: 0.7, fontSize: '0.8em', marginLeft: '4px' }}>({user?.role})</span>
         </span>
@@ -57,6 +60,7 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
 
 
 

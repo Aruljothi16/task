@@ -4,7 +4,10 @@ import { managerService } from '../../../services/managerService';
 import Loader from '../../common/Loader';
 import StatusBadge from '../../shared/StatusBadge';
 import CreateTask from './CreateTask';
-import { Search, List, Calendar, User, Briefcase, ChevronRight } from 'lucide-react';
+import {
+  Search, List, Calendar, User, Briefcase,
+  ChevronRight, Filter, Target, AlertCircle
+} from 'lucide-react';
 
 const TasksList = () => {
   const [tasks, setTasks] = useState([]);
@@ -60,47 +63,59 @@ const TasksList = () => {
 
   return (
     <div className="content">
-      <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <h1 style={{ margin: 0 }}>Tasks</h1>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ position: 'relative' }}>
-            <Search size={18} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+      <div className="page-header" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Global Tasks</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>Review and manage all task assignments across your projects.</p>
+        </div>
+        <CreateTask onTaskCreated={handleTaskCreated} />
+      </div>
+
+      <div className="card" style={{ marginBottom: '2rem', padding: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative', flex: 1, minWidth: '300px' }}>
+            <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
             <input
               type="text"
-              className="form-control"
-              placeholder="Search tasks..."
+              placeholder="Filter by task title, member, or specific project name..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ paddingLeft: '2.5rem', width: '250px' }}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="form-control"
+              style={{ paddingLeft: '3rem', borderRadius: '8px', background: 'var(--bg-body)' }}
             />
           </div>
-          <CreateTask onTaskCreated={handleTaskCreated} />
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '8px' }}>
+              <Filter size={18} /> Filters
+            </button>
+          </div>
         </div>
       </div>
 
       {error && (
-        <div className="alert alert-danger" style={{ margin: '1rem 0' }}>
+        <div className="card" style={{ background: '#fee2e2', border: '1px solid #fecaca', color: '#dc2626', padding: '1rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <AlertCircle size={20} />
           {error}
         </div>
       )}
 
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+      <div className="card" style={{ padding: 0, overflow: 'hidden', border: '1px solid var(--border-light)', boxShadow: 'var(--shadow-lg)' }}>
         {filteredTasks.length === 0 ? (
-          <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-            <p style={{ fontSize: '1.1rem' }}>No tasks found. Create your first task to get started!</p>
+          <div style={{ padding: '5rem 2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+            <Target size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
+            <h3>No active tasks found</h3>
+            <p>Try refining your search or create a new task to get started.</p>
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table className="table" style={{ margin: 0 }}>
               <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Title</th>
-                  <th>Project</th>
-                  <th>Assigned To</th>
-                  <th>Status</th>
-                  <th>Priority</th>
-                  <th>Due Date</th>
+                <tr style={{ background: 'var(--bg-body)' }}>
+                  <th style={{ padding: '1.25rem' }}>Task Designation</th>
+                  <th>Assignment</th>
+                  <th>Affiliation</th>
+                  <th>Classification</th>
+                  <th>Timeline</th>
                   <th></th>
                 </tr>
               </thead>
@@ -109,21 +124,46 @@ const TasksList = () => {
                   <tr
                     key={task.id}
                     onClick={() => handleRowClick(task.id)}
-                    style={{ cursor: 'pointer', transition: 'background-color 0.2s' }}
+                    className="hover-row"
+                    style={{ borderBottom: '1px solid var(--border-light)', transition: 'background-color 0.2s' }}
                   >
-                    <td>#{task.id}</td>
-                    <td style={{ fontWeight: '600', color: 'var(--text-main)' }}>{task.title}</td>
-                    <td>{task.project_name || '-'}</td>
-                    <td>{task.assigned_to_name || '-'}</td>
-                    <td>
-                      <StatusBadge status={task.status} />
+                    <td style={{ padding: '1.25rem' }}>
+                      <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.95rem' }}>{task.title}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>ID: #{task.id}</div>
                     </td>
                     <td>
-                      <span className={`badge badge-${task.priority}`} style={{ textTransform: 'capitalize' }}>
-                        {task.priority}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 800 }}>
+                          {task.assigned_to_name?.charAt(0).toUpperCase() || '?'}
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{task.assigned_to_name || 'Unassigned'}</div>
+                          {task.assigned_to_designation && (
+                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{task.assigned_to_designation}</div>
+                          )}
+                        </div>
+                      </div>
                     </td>
-                    <td>{task.due_date ? new Date(task.due_date).toLocaleDateString() : '-'}</td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                        <Briefcase size={14} />
+                        <span style={{ fontWeight: 500 }}>{task.project_name || 'Direct Task'}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <StatusBadge status={task.status} />
+                        <span className={`badge badge-${task.priority}`} style={{ fontSize: '0.65rem', textTransform: 'uppercase', width: 'fit-content' }}>
+                          {task.priority}
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)' }}>
+                        <Calendar size={14} />
+                        {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'N/A'}
+                      </div>
+                    </td>
                     <td style={{ color: 'var(--text-muted)' }}>
                       <ChevronRight size={18} />
                     </td>

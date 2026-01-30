@@ -27,6 +27,7 @@ if ($user_data['role'] === 'admin') {
         // Get tasks from manager's projects
         $query = "SELECT t.*, p.name as project_name,
                          u1.full_name as assigned_to_name,
+                         u1.designation as assigned_to_designation,
                          u2.full_name as assigned_by_name
                   FROM tasks t
                   LEFT JOIN projects p ON t.project_id = p.id
@@ -51,6 +52,7 @@ echo json_encode([
     "tasks" => $tasks
 ]);
 ?>
+
 
 
 

@@ -14,19 +14,22 @@ const AdminPage = () => {
       <Navbar />
       <div className="main-content">
         <AdminSidebar />
-        <Routes>
-          <Route path="/" element={<AdminDashboard />} />
-          <Route path="/users" element={<UsersList />} />
-          <Route path="/projects" element={<ProjectsList />} />
-          <Route path="/tasks" element={<TaskStatus />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Routes>
+            <Route path="/" element={<AdminDashboard />} />
+            <Route path="/users" element={<UsersList />} />
+            <Route path="/projects" element={<ProjectsList />} />
+            <Route path="/tasks" element={<TaskStatus />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </div>
       </div>
     </div>
   );
 };
 
 export default AdminPage;
+
 
 
 

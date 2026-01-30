@@ -18,6 +18,7 @@ if (!empty($data->id)) {
     $user->email = $data->email ?? null;
     $user->full_name = $data->full_name ?? null;
     $user->role = $data->role ?? null;
+    $user->designation = $data->designation ?? null;
     
     if (!empty($data->password)) {
         $user->password = password_hash($data->password, PASSWORD_DEFAULT);
@@ -35,6 +36,7 @@ if (!empty($data->id)) {
     echo json_encode(["message" => "User ID is required"]);
 }
 ?>
+
 
 
 

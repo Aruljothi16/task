@@ -11,3 +11,4 @@ echo "\nVerification: " . (password_verify($password, $hash) ? "SUCCESS" : "FAIL
 
 
 
+

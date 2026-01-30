@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { memberService } from '../../../services/memberService';
 import Loader from '../../common/Loader';
@@ -25,7 +25,13 @@ import {
   XCircle,
   Download,
   Save,
-  RotateCcw
+  RotateCcw,
+  Hourglass,
+  Activity,
+  ShieldCheck,
+  AlertTriangle,
+  X,
+  ChevronDown
 } from 'lucide-react';
 
 const TaskDetails = () => {
@@ -41,6 +47,8 @@ const TaskDetails = () => {
   const [progressNote, setProgressNote] = useState('');
   const [attachments, setAttachments] = useState([]);
   const [updating, setUpdating] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   // Preview
   const [previewImage, setPreviewImage] = useState(null);
@@ -48,6 +56,18 @@ const TaskDetails = () => {
   useEffect(() => {
     loadTask();
   }, [id]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const loadTask = async () => {
     setLoading(true);
@@ -126,6 +146,19 @@ const TaskDetails = () => {
     return colors[priority] || 'var(--text-secondary)';
   };
 
+  const statusOptions = [
+    { value: 'pending', label: 'Pending', icon: Hourglass, color: '#f59e0b' },
+    { value: 'in_progress', label: 'In Progress', icon: Activity, color: '#3b82f6' },
+    { value: 'completed', label: 'Completed', icon: CheckCircle2, color: '#10b981' },
+    { value: 'verified', label: 'Verified', icon: ShieldCheck, color: '#8b5cf6' },
+    { value: 'failed', label: 'Failed', icon: AlertTriangle, color: '#ef4444' },
+    { value: 'cancelled', label: 'Cancelled', icon: X, color: '#64748b' }
+  ];
+
+  const getSelectedOption = () => {
+    return statusOptions.find(opt => opt.value === selectedStatus) || statusOptions[0];
+  };
+
   if (loading) return <Loader />;
 
   if (error || !task) {
@@ -175,15 +208,17 @@ const TaskDetails = () => {
   return (
     <div className="content">
       {/* Header with Back Button */}
-      <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <div className="page-header" style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
         <button
           className="btn btn-secondary"
           onClick={() => navigate('/member/tasks')}
+          style={{ padding: '8px', minWidth: 'auto', borderRadius: '8px' }}
         >
-          <ArrowLeft size={18} /> Back to Tasks
+          <ArrowLeft size={20} />
         </button>
-        <div style={{ flex: 1 }}>
-          <h1 style={{ margin: 0, fontSize: '1.5rem' }}>Task Details</h1>
+        <div>
+          <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>Member Task View</h1>
+          <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Manage your contribution and update project milestones.</p>
         </div>
       </div>
 
@@ -294,18 +329,80 @@ const TaskDetails = () => {
             <label className="form-label">
               Status *
             </label>
-            <select
-              className="form-control"
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              disabled={updating}
-              style={{ maxWidth: '400px' }}
-            >
-              <option value="pending">⏳ Pending</option>
-              <option value="in_progress">🔄 In Progress</option>
-              <option value="completed">✅ Completed</option>
-              <option value="cancelled">❌ Cancelled</option>
-            </select>
+            <div style={{ position: 'relative', maxWidth: '400px' }} ref={dropdownRef}>
+              <div
+                onClick={() => !updating && setIsDropdownOpen(!isDropdownOpen)}
+                style={{
+                  width: '100%',
+                  padding: '0.875rem 1rem',
+                  border: '2px solid var(--border-light)',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'var(--bg-body)',
+                  color: 'var(--text-main)',
+                  cursor: updating ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  opacity: updating ? 0.7 : 1
+                }}
+              >
+                {(() => {
+                  const selected = getSelectedOption();
+                  const Icon = selected.icon;
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <Icon size={18} color={selected.color} />
+                      <span>{selected.label}</span>
+                    </div>
+                  );
+                })()}
+                <ChevronDown size={16} color="var(--text-muted)" />
+              </div>
+
+              {isDropdownOpen && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  marginTop: '0.5rem',
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border-light)',
+                  borderRadius: 'var(--radius-md)',
+                  boxShadow: 'var(--shadow-lg)',
+                  zIndex: 10,
+                  overflow: 'hidden'
+                }}>
+                  {statusOptions.map((option) => {
+                    const Icon = option.icon;
+                    return (
+                      <div
+                        key={option.value}
+                        onClick={() => {
+                          setSelectedStatus(option.value);
+                          setIsDropdownOpen(false);
+                        }}
+                        style={{
+                          padding: '0.75rem 1rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          background: selectedStatus === option.value ? 'var(--bg-body)' : 'transparent',
+                          transition: 'background 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-body)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = selectedStatus === option.value ? 'var(--bg-body)' : 'transparent'}
+                      >
+                        <Icon size={18} color={option.color} />
+                        <span>{option.label}</span>
+                        {selectedStatus === option.value && <CheckCircle2 size={16} color="var(--primary)" style={{ marginLeft: 'auto' }} />}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="form-group" style={{ marginBottom: '1.5rem' }}>
@@ -478,5 +575,3 @@ const TaskDetails = () => {
 };
 
 export default TaskDetails;
-
-

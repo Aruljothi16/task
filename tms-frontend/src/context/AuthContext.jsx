@@ -30,10 +30,17 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const updateUser = (userData) => {
+    setUser(prev => ({ ...prev, ...userData }));
+    const currentLocal = JSON.parse(localStorage.getItem('user'));
+    localStorage.setItem('user', JSON.stringify({ ...currentLocal, ...userData }));
+  };
+
   const value = {
     user,
     login,
     logout,
+    updateUser,
     isAuthenticated: !!user,
     loading,
   };
@@ -48,6 +55,7 @@ export const useAuth = () => {
   }
   return context;
 };
+
 
 
 

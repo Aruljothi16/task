@@ -12,7 +12,12 @@ export const adminService = {
   },
 
   updateUser: async (userData) => {
-    const response = await api.put('/api/users/update.php', userData);
+    const response = await api.post('/api/users/update.php', userData);
+    return response.data;
+  },
+
+  deleteUser: async (userId) => {
+    const response = await api.post('/api/users/delete.php', { id: userId });
     return response.data;
   },
 
@@ -23,6 +28,11 @@ export const adminService = {
 
   createProject: async (projectData) => {
     const response = await api.post('/api/projects/create.php', projectData);
+    return response.data;
+  },
+
+  deleteProject: async (projectId) => {
+    const response = await api.post('/api/projects/delete.php', { id: projectId });
     return response.data;
   },
 
@@ -41,6 +51,7 @@ export const adminService = {
     return response.data.summary;
   },
 };
+
 
 
 

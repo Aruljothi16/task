@@ -16,6 +16,11 @@ export const managerService = {
     return response.data;
   },
 
+  deleteProject: async (projectId) => {
+    const response = await api.post('/api/projects/delete.php', { id: projectId });
+    return response.data;
+  },
+
   getTasks: async (projectId = null) => {
     const url = projectId
       ? `/api/tasks/list.php?project_id=${projectId}`
@@ -29,11 +34,14 @@ export const managerService = {
     return response.data;
   },
 
-  assignTask: async (taskId, userId) => {
-    const response = await api.post('/api/tasks/assign.php', {
+  assignTask: async (taskId, userId, status = null) => {
+    const payload = {
       task_id: taskId,
       assigned_to: userId,
-    });
+    };
+    if (status) payload.status = status;
+
+    const response = await api.post('/api/tasks/assign.php', payload);
     return response.data;
   },
 
@@ -53,4 +61,5 @@ export const managerService = {
     }
   },
 };
+
 

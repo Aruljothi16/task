@@ -27,6 +27,22 @@ if (!empty($data->task_id) && !empty($data->status)) {
     }
 
     if ($task->updateStatus()) {
+        // Log Activity
+        try {
+            $activity_query = "INSERT INTO task_activity (task_id, user_id, action, description) 
+                             VALUES (:task_id, :user_id, 'status_updated', :description)";
+            
+            $description = "changed status to " . str_replace('_', ' ', ucfirst($task->status));
+            
+            $activity_stmt = $db->prepare($activity_query);
+            $activity_stmt->bindParam(":task_id", $task->id);
+            $activity_stmt->bindParam(":user_id", $user_data['id']);
+            $activity_stmt->bindParam(":description", $description);
+            $activity_stmt->execute();
+        } catch (Exception $e) {
+            // Ignore errors
+        }
+
         http_response_code(200);
         echo json_encode(["message" => "Task status updated successfully"]);
     } else {
@@ -38,6 +54,7 @@ if (!empty($data->task_id) && !empty($data->status)) {
     echo json_encode(["message" => "Task ID and status are required"]);
 }
 ?>
+
 
 
 

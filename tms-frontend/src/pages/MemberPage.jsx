@@ -13,18 +13,21 @@ const MemberPage = () => {
       <Navbar />
       <div className="main-content">
         <MemberSidebar />
-        <Routes>
-          <Route path="/" element={<MemberDashboard />} />
-          <Route path="/tasks" element={<MyTasks />} />
-          <Route path="/tasks/:id" element={<TaskDetails />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Routes>
+            <Route path="/" element={<MemberDashboard />} />
+            <Route path="/tasks" element={<MyTasks />} />
+            <Route path="/tasks/:id" element={<TaskDetails />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </div>
       </div>
     </div>
   );
 };
 
 export default MemberPage;
+
 
 
 

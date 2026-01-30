@@ -26,6 +26,7 @@ if (!empty($data->username) && !empty($data->email) && !empty($data->password) &
     $user->password = password_hash($data->password, PASSWORD_DEFAULT);
     $user->full_name = $data->full_name;
     $user->role = $data->role;
+    $user->designation = isset($data->designation) ? $data->designation : null;
 
     if ($user->create()) {
         http_response_code(201);
@@ -36,7 +37,8 @@ if (!empty($data->username) && !empty($data->email) && !empty($data->password) &
                 "username" => $user->username,
                 "email" => $user->email,
                 "full_name" => $user->full_name,
-                "role" => $user->role
+                "role" => $user->role,
+                "designation" => $user->designation
             ]
         ]);
     } else {
@@ -48,6 +50,7 @@ if (!empty($data->username) && !empty($data->email) && !empty($data->password) &
     echo json_encode(["message" => "All fields are required"]);
 }
 ?>
+
 
 
 

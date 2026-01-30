@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { memberService } from '../../../services/memberService';
+import { managerService } from '../../../services/managerService';
 import Loader from '../../common/Loader';
 import StatusBadge from '../../shared/StatusBadge';
 import Modal from '../../shared/Modal';
@@ -29,10 +30,24 @@ const ManagerTaskDetails = () => {
     const [comment, setComment] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [previewImage, setPreviewImage] = useState(null);
+    const [showAssignModal, setShowAssignModal] = useState(false);
+    const [members, setMembers] = useState([]);
+    const [selectedTester, setSelectedTester] = useState('');
+    const [assigning, setAssigning] = useState(false);
 
     useEffect(() => {
         loadTask();
+        loadMembers();
     }, [id]);
+
+    const loadMembers = async () => {
+        try {
+            const data = await managerService.getTeamMembers();
+            setMembers(data);
+        } catch (error) {
+            console.error('Failed to load team members:', error);
+        }
+    };
 
     const loadTask = async () => {
         setLoading(true);
@@ -63,6 +78,23 @@ const ManagerTaskDetails = () => {
             addToast('Failed to add comment', 'error');
         } finally {
             setSubmitting(false);
+        }
+    };
+
+    const handleAssignTester = async () => {
+        if (!selectedTester) return;
+        setAssigning(true);
+        try {
+            // Assign to tester and update status to 'testing'
+            await managerService.assignTask(id, selectedTester, 'testing');
+            addToast('Task assigned to tester successfully', 'success');
+            setShowAssignModal(false);
+            loadTask();
+        } catch (error) {
+            console.error('Failed to assign tester:', error);
+            addToast('Failed to assign tester', 'error');
+        } finally {
+            setAssigning(false);
         }
     };
 
@@ -129,11 +161,28 @@ const ManagerTaskDetails = () => {
 
     return (
         <div className="content">
-            <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <button className="btn btn-secondary" onClick={() => navigate('/manager/tasks')}>
-                    <ArrowLeft size={18} />
+            <div className="page-header" style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                <button
+                    className="btn btn-secondary"
+                    onClick={() => navigate('/manager/tasks')}
+                    style={{ padding: '8px', minWidth: 'auto', borderRadius: '8px' }}
+                >
+                    <ArrowLeft size={20} />
                 </button>
-                <h1 style={{ margin: 0, fontSize: '1.5rem' }}>Task Details</h1>
+                <div>
+
+                    <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>Task Intelligence</h1>
+                    <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Deep dive into task progress, feedback, and deliverables.</p>
+                </div>
+                {task && task.status === 'completed' && (
+                    <button
+                        className="btn btn-primary"
+                        onClick={() => setShowAssignModal(true)}
+                        style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}
+                    >
+                        <User size={18} /> Assign to Tester
+                    </button>
+                )}
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem' }}>
@@ -337,6 +386,56 @@ const ManagerTaskDetails = () => {
                     </div>
                 </Modal>
             )}
+
+
+            <Modal
+                isOpen={showAssignModal}
+                onClose={() => setShowAssignModal(false)}
+                title="Assign for Testing"
+            >
+                <div>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+                        Select a Quality Assurance (Tester) member to verify this completed task.
+                    </p>
+                    <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                        <label className="form-label">Select Tester</label>
+                        <select
+                            className="form-control"
+                            value={selectedTester}
+                            onChange={(e) => setSelectedTester(e.target.value)}
+                        >
+                            <option value="">-- Choose a Tester --</option>
+                            {members
+                                .filter(m => m.designation === 'Tester' || m.role === 'admin') // Include admins or just testers? Stick to Testers.
+                                .map(member => (
+                                    <option key={member.id} value={member.id}>
+                                        {member.full_name} ({member.designation || member.role})
+                                    </option>
+                                ))}
+                        </select>
+                        {members.filter(m => m.designation === 'Tester').length === 0 && (
+                            <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#dc2626' }}>
+                                Warning: No users found with 'Tester' designation.
+                            </div>
+                        )}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+                        <button
+                            className="btn btn-secondary"
+                            onClick={() => setShowAssignModal(false)}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            className="btn btn-primary"
+                            onClick={handleAssignTester}
+                            disabled={!selectedTester || assigning}
+                        >
+                            {assigning ? 'Assigning...' : 'Confirm Assignment'}
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };

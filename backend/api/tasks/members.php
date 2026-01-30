@@ -13,7 +13,7 @@ $user = new User($db);
 
 try {
     // Get all active members
-    $query = "SELECT id, full_name, email, role, created_at 
+    $query = "SELECT id, full_name, email, role, designation, created_at 
               FROM users 
               WHERE role = 'member'
               ORDER BY full_name ASC";

@@ -14,19 +14,22 @@ const ManagerPage = () => {
       <Navbar />
       <div className="main-content">
         <ManagerSidebar />
-        <Routes>
-          <Route path="/" element={<ManagerDashboard />} />
-          <Route path="/projects" element={<MyProjects />} />
-          <Route path="/tasks" element={<TasksList />} />
-          <Route path="/tasks/:id" element={<ManagerTaskDetails />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Routes>
+            <Route path="/" element={<ManagerDashboard />} />
+            <Route path="/projects" element={<MyProjects />} />
+            <Route path="/tasks" element={<TasksList />} />
+            <Route path="/tasks/:id" element={<ManagerTaskDetails />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </div>
       </div>
     </div>
   );
 };
 
 export default ManagerPage;
+
 
 
 

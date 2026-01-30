@@ -1,6 +1,6 @@
 # React
-frontend/node_modules/
-frontend/build/
+tms-frontend/node_modules/
+tms-frontend/build/
 
 # PHP
 backend/vendor/

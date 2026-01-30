@@ -11,13 +11,14 @@ class User {
     public $password;
     public $full_name;
     public $role;
+    public $designation;
 
     public function __construct($db) {
         $this->conn = $db;
     }
 
     public function findByEmail($email) {
-        $query = "SELECT id, username, email, password, full_name, role 
+        $query = "SELECT id, username, email, password, full_name, role, designation 
                   FROM " . $this->table_name . " 
                   WHERE email = :email LIMIT 1";
 
@@ -29,7 +30,7 @@ class User {
     }
 
     public function findById($id) {
-        $query = "SELECT id, username, email, full_name, role 
+        $query = "SELECT id, username, email, full_name, role, designation 
                   FROM " . $this->table_name . " 
                   WHERE id = :id LIMIT 1";
 
@@ -42,8 +43,8 @@ class User {
 
     public function create() {
         $query = "INSERT INTO " . $this->table_name . " 
-                  (username, email, password, full_name, role) 
-                  VALUES (:username, :email, :password, :full_name, :role)";
+                  (username, email, password, full_name, role, designation) 
+                  VALUES (:username, :email, :password, :full_name, :role, :designation)";
 
         $stmt = $this->conn->prepare($query);
 
@@ -52,6 +53,7 @@ class User {
         $stmt->bindParam(":password", $this->password);
         $stmt->bindParam(":full_name", $this->full_name);
         $stmt->bindParam(":role", $this->role);
+        $stmt->bindParam(":designation", $this->designation);
 
         if ($stmt->execute()) {
             $this->id = $this->conn->lastInsertId();
@@ -64,7 +66,7 @@ class User {
     public function update() {
         $query = "UPDATE " . $this->table_name . " 
                   SET username = :username, email = :email, 
-                      full_name = :full_name, role = :role";
+                      full_name = :full_name, role = :role, designation = :designation";
 
         if (!empty($this->password)) {
             $query .= ", password = :password";
@@ -78,6 +80,7 @@ class User {
         $stmt->bindParam(":email", $this->email);
         $stmt->bindParam(":full_name", $this->full_name);
         $stmt->bindParam(":role", $this->role);
+        $stmt->bindParam(":designation", $this->designation);
         $stmt->bindParam(":id", $this->id);
 
         if (!empty($this->password)) {
@@ -88,7 +91,7 @@ class User {
     }
 
     public function getAll() {
-        $query = "SELECT id, username, email, full_name, role, created_at 
+        $query = "SELECT id, username, email, full_name, role, designation, created_at 
                   FROM " . $this->table_name . " 
                   ORDER BY created_at DESC";
 
@@ -97,8 +100,33 @@ class User {
 
         return $stmt->fetchAll();
     }
+    public function changePassword($id, $new_password) {
+        $query = "UPDATE " . $this->table_name . " 
+                  SET password = :password 
+                  WHERE id = :id";
+
+        $stmt = $this->conn->prepare($query);
+        $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+        $stmt->bindParam(":password", $hashed_password);
+        $stmt->bindParam(":id", $id);
+
+        return $stmt->execute();
+    }
+
+    public function findByIdDetailed($id) {
+        $query = "SELECT id, username, email, full_name, role, designation, created_at 
+                  FROM " . $this->table_name . " 
+                  WHERE id = :id LIMIT 1";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":id", $id);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 }
 ?>
+
 
 
 

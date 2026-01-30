@@ -58,6 +58,7 @@ class Task {
     public function getByUser($user_id) {
         $query = "SELECT t.*, p.name as project_name, 
                          u1.full_name as assigned_to_name,
+                         u1.designation as assigned_to_designation,
                          u2.full_name as assigned_by_name
                   FROM " . $this->table_name . " t
                   LEFT JOIN projects p ON t.project_id = p.id
@@ -76,6 +77,7 @@ class Task {
     public function getByProject($project_id) {
         $query = "SELECT t.*, 
                          u1.full_name as assigned_to_name,
+                         u1.designation as assigned_to_designation,
                          u2.full_name as assigned_by_name
                   FROM " . $this->table_name . " t
                   LEFT JOIN users u1 ON t.assigned_to = u1.id
@@ -93,6 +95,7 @@ class Task {
     public function getAll() {
         $query = "SELECT t.*, p.name as project_name,
                          u1.full_name as assigned_to_name,
+                         u1.designation as assigned_to_designation,
                          u2.full_name as assigned_by_name
                   FROM " . $this->table_name . " t
                   LEFT JOIN projects p ON t.project_id = p.id
@@ -109,6 +112,7 @@ class Task {
     public function findById($id) {
         $query = "SELECT t.*, p.name as project_name,
                          u1.full_name as assigned_to_name,
+                         u1.designation as assigned_to_designation,
                          u2.full_name as assigned_by_name
                   FROM " . $this->table_name . " t
                   LEFT JOIN projects p ON t.project_id = p.id
@@ -124,6 +128,7 @@ class Task {
     }
 }
 ?>
+
 
 
 
