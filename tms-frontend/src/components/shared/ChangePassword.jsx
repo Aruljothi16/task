@@ -53,7 +53,7 @@ const ChangePassword = () => {
 
     return (
         <div className="card glass-panel" style={{ padding: '2rem', height: '100%', border: '1px solid var(--border-glass)' }}>
-            <div className="card-header" style={{ marginBottom: '2rem', border: 'none', padding: 0 }}>
+            <div className="card-header" style={{ marginBottom: '2rem', border: 'none', padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                 <div style={{
                     width: '48px',
                     height: '48px',

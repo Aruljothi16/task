@@ -361,7 +361,7 @@ export default function MyProjects() {
           </div>
         </div>
         <div style={styles.headerActions}>
-          <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+          <button className="btn btn-primary" onClick={() => setShowCreateModal(true)} style={{ padding: '10px 20px' }}>
             <FolderPlus size={16} /> <span>Create Project</span>
           </button>
         </div>
@@ -403,7 +403,6 @@ export default function MyProjects() {
         </div>
 
         <div style={styles.filterGroup}>
-          <Filter size={16} style={{ opacity: 0.6 }} />
           <select value={filterStatus} onChange={(e) => { setFilterStatus(e.target.value); setCurrentPage(1); }} style={styles.filterSelect}>
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
@@ -759,7 +758,7 @@ export default function MyProjects() {
 
 const styles = {
   container: { padding: '20px', minHeight: '100vh', boxSizing: 'border-box' },
-  header: { display: 'flex', justifyContent: 'space-between', marginBottom: '30px', flexWrap: 'wrap', gap: '20px' },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '30px', flexWrap: 'wrap', gap: '20px' },
   title: { fontSize: '28px', fontWeight: '800', margin: '0 0 8px 0', background: 'linear-gradient(135deg, var(--primary), var(--accent))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' },
   subtitle: { color: 'var(--text-secondary)', fontSize: '15px', margin: 0 },
   statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '30px' },
@@ -827,6 +826,7 @@ const styles = {
   detailsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' },
   detailItem: { fontSize: '14px', color: 'var(--text-main)' }
 };
+
 
 
 

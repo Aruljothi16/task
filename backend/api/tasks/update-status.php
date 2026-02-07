@@ -3,12 +3,14 @@ require_once __DIR__ . '/../../config/headers.php';
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../middleware/role.php';
 require_once __DIR__ . '/../../models/Task.php';
+require_once __DIR__ . '/../../models/ActivityLogger.php';
 
 $user_data = requireMember();
 
 $database = new Database();
 $db = $database->getConnection();
 $task = new Task($db);
+$logger = new ActivityLogger($db);
 
 $data = json_decode(file_get_contents("php://input"));
 
@@ -26,21 +28,20 @@ if (!empty($data->task_id) && !empty($data->status)) {
         }
     }
 
+    // Get task details before update
+    $task_data = $task->findById($task->id);
+    $old_status = $task_data ? $task_data['status'] : null;
+    
     if ($task->updateStatus()) {
-        // Log Activity
-        try {
-            $activity_query = "INSERT INTO task_activity (task_id, user_id, action, description) 
-                             VALUES (:task_id, :user_id, 'status_updated', :description)";
-            
-            $description = "changed status to " . str_replace('_', ' ', ucfirst($task->status));
-            
-            $activity_stmt = $db->prepare($activity_query);
-            $activity_stmt->bindParam(":task_id", $task->id);
-            $activity_stmt->bindParam(":user_id", $user_data['id']);
-            $activity_stmt->bindParam(":description", $description);
-            $activity_stmt->execute();
-        } catch (Exception $e) {
-            // Ignore errors
+        // Log status change with new ActivityLogger
+        if ($old_status && $task_data) {
+            $logger->logTaskStatusChanged(
+                $user_data['id'],
+                $task->id,
+                $task_data['title'],
+                $old_status,
+                $task->status
+            );
         }
 
         http_response_code(200);
@@ -54,6 +55,7 @@ if (!empty($data->task_id) && !empty($data->status)) {
     echo json_encode(["message" => "Task ID and status are required"]);
 }
 ?>
+
 
 
 

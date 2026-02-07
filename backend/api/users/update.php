@@ -3,12 +3,14 @@ require_once __DIR__ . '/../../config/headers.php';
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../middleware/role.php';
 require_once __DIR__ . '/../../models/User.php';
+require_once __DIR__ . '/../../models/ActivityLogger.php';
 
 $user_data = requireAdmin();
 
 $database = new Database();
 $db = $database->getConnection();
 $user = new User($db);
+$logger = new ActivityLogger($db);
 
 $data = json_decode(file_get_contents("php://input"));
 
@@ -25,6 +27,22 @@ if (!empty($data->id)) {
     }
 
     if ($user->update()) {
+        // Log user update
+        $changes = [];
+        if ($data->username) $changes[] = 'username';
+        if ($data->email) $changes[] = 'email';
+        if ($data->full_name) $changes[] = 'full_name';
+        if ($data->role) $changes[] = 'role';
+        if ($data->designation) $changes[] = 'designation';
+        if (!empty($data->password)) $changes[] = 'password';
+        
+        $logger->logUserUpdated(
+            $user_data['id'],
+            $user->id,
+            $data->username ?? 'User',
+            $changes
+        );
+        
         http_response_code(200);
         echo json_encode(["message" => "User updated successfully"]);
     } else {
@@ -36,6 +54,7 @@ if (!empty($data->id)) {
     echo json_encode(["message" => "User ID is required"]);
 }
 ?>
+
 
 
 

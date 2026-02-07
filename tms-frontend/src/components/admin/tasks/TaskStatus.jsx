@@ -78,7 +78,7 @@ const TaskStatus = () => {
               <th style={{ color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em' }}>Affiliation</th>
               <th style={{ color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em' }}>Personnel</th>
               <th style={{ color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em' }}>Timeline</th>
-              <th style={{ color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em' }}>Classification</th>
+              <th style={{ color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em', minWidth: '150px' }}>Classification</th>
             </tr>
           </thead>
           <tbody>
@@ -119,11 +119,19 @@ const TaskStatus = () => {
                     {task.due_date ? new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'No Deadline'}
                   </div>
                 </td>
-                <td>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <StatusBadge status={task.status} />
-                    <span className={`badge badge-${task.priority}`} style={{ width: 'fit-content', fontSize: '0.65rem', textTransform: 'uppercase' }}>
-                      {task.priority} Priority
+                <td style={{ minWidth: '150px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ width: '100px' }}>
+                      <StatusBadge status={task.status} />
+                    </div>
+                    <span className={`badge badge-${task.priority}`} style={{
+                      fontSize: '0.65rem',
+                      textTransform: 'uppercase',
+                      width: '100px',
+                      textAlign: 'center',
+                      display: 'inline-block'
+                    }}>
+                      {task.priority}
                     </span>
                   </div>
                 </td>
@@ -158,6 +166,7 @@ const isOverdue = (date, status) => {
 };
 
 export default TaskStatus;
+
 
 
 

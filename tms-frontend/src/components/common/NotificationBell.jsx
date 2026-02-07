@@ -14,12 +14,13 @@ const NotificationBell = () => {
     const dropdownRef = useRef(null);
     const { theme } = useTheme();
 
-    // Get current user to namespace the storage keys
+    // Get current user and panel context to namespace the storage keys
     const user = JSON.parse(localStorage.getItem('user'));
     const userId = user ? user.id : 'guest';
+    const panel = window.location.pathname.split('/')[1] || 'default';
 
-    const VISITED_KEY = `visitedActivityIds_${userId}`;
-    const LAST_CHECK_KEY = `lastActivityCheck_${userId}`;
+    const VISITED_KEY = `visitedActivityIds_${userId}_${panel}`;
+    const LAST_CHECK_KEY = `lastActivityCheck_${userId}_${panel}`;
 
     // Load visited IDs from local storage
     useEffect(() => {
@@ -49,7 +50,7 @@ const NotificationBell = () => {
 
     const checkNewActivity = async () => {
         try {
-            const response = await api.get('/api/activity/list.php?limit=1');
+            const response = await api.get('/api/activity/list.php?limit=1&scope=notifications');
             if (response.data && response.data.activities && response.data.activities.length > 0) {
                 const latestActivity = new Date(response.data.activities[0].created_at).getTime();
                 const lastChecked = localStorage.getItem(LAST_CHECK_KEY);
@@ -74,7 +75,7 @@ const NotificationBell = () => {
         try {
             // "Recent" -> 10, "All" -> 50 for now
             const limit = activeTab === 'recent' ? 10 : 50;
-            const response = await api.get(`/api/activity/list.php?limit=${limit}`);
+            const response = await api.get(`/api/activity/list.php?limit=${limit}&scope=notifications`);
             if (response.data && response.data.activities) {
                 setActivities(response.data.activities);
 

@@ -2,11 +2,13 @@
 require_once __DIR__ . '/../../config/headers.php';
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../middleware/role.php';
+require_once __DIR__ . '/../../models/ActivityLogger.php';
 
 $user_data = authenticate();
 
 $database = new Database();
 $db = $database->getConnection();
+$logger = new ActivityLogger($db);
 
 // Get request data
 $data = json_decode(file_get_contents("php://input"));
@@ -72,14 +74,12 @@ try {
     if ($stmt->execute()) {
         $note_id = $db->lastInsertId();
         
-        // Log activity
-        $activity_query = "INSERT INTO task_activity (task_id, user_id, action, description) 
-                          VALUES (:task_id, :user_id, 'note_added', :description)";
-        $activity_stmt = $db->prepare($activity_query);
-        $activity_stmt->bindParam(":task_id", $task_id);
-        $activity_stmt->bindParam(":user_id", $user_data['id']);
-        $activity_stmt->bindParam(":description", $note);
-        $activity_stmt->execute();
+        // Log activity with new ActivityLogger
+        $logger->logTaskCommentAdded(
+            $user_data['id'],
+            $task_id,
+            $task['title']
+        );
         
         http_response_code(201);
         echo json_encode([

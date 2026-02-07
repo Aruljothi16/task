@@ -30,19 +30,25 @@ const StatusBadge = ({ status, type = 'task' }) => {
   };
 
   const formatStatus = (status) => {
-    return status.split('_').map(word => 
+    return status.split('_').map(word =>
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
   };
 
   return (
-    <span className={getStatusClass()}>
+    <span className={getStatusClass()} style={{
+      display: 'inline-block',
+      minWidth: '100px',
+      textAlign: 'center',
+      whiteSpace: 'nowrap'
+    }}>
       {formatStatus(status)}
     </span>
   );
 };
 
 export default StatusBadge;
+
 
 
 

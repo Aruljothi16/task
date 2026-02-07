@@ -6,6 +6,7 @@ import ManagerDashboard from '../components/manager/dashboard/ManagerDashboard';
 import MyProjects from '../components/manager/projects/MyProjects';
 import TasksList from '../components/manager/tasks/TasksList';
 import ManagerTaskDetails from '../components/manager/tasks/ManagerTaskDetails';
+import ManagerActivityLog from '../components/manager/activity/ManagerActivityLog';
 import Settings from '../components/manager/settings/Settings';
 
 const ManagerPage = () => {
@@ -20,6 +21,7 @@ const ManagerPage = () => {
             <Route path="/projects" element={<MyProjects />} />
             <Route path="/tasks" element={<TasksList />} />
             <Route path="/tasks/:id" element={<ManagerTaskDetails />} />
+            <Route path="/activity" element={<ManagerActivityLog />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </div>
@@ -29,6 +31,7 @@ const ManagerPage = () => {
 };
 
 export default ManagerPage;
+
 
 
 

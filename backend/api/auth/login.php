@@ -3,10 +3,12 @@ require_once __DIR__ . '/../../config/headers.php';
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../config/jwt.php';
 require_once __DIR__ . '/../../models/User.php';
+require_once __DIR__ . '/../../models/ActivityLogger.php';
 
 $database = new Database();
 $db = $database->getConnection();
 $user = new User($db);
+$logger = new ActivityLogger($db);
 
 $data = json_decode(file_get_contents("php://input"));
 
@@ -26,6 +28,9 @@ if (!empty($data->email) && !empty($data->password)) {
             ];
 
             $token = JWT::encode($token_payload);
+
+            // Log successful login
+            $logger->logLogin($user_data['id'], $user_data['username']);
 
             http_response_code(200);
             echo json_encode([

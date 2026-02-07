@@ -98,7 +98,7 @@ const CreateTask = ({ onTaskCreated }) => {
 
   return (
     <>
-      <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+      <button className="btn btn-primary" onClick={() => setShowModal(true)} style={{ padding: '10px 20px' }}>
         <Plus size={18} style={{ marginRight: '0.5rem' }} /> Create Task
       </button>
 
@@ -219,6 +219,7 @@ const CreateTask = ({ onTaskCreated }) => {
 };
 
 export default CreateTask;
+
 
 
 

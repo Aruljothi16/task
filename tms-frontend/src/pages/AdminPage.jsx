@@ -6,6 +6,7 @@ import AdminDashboard from '../components/admin/dashboard/AdminDashboard';
 import UsersList from '../components/admin/users/UsersList';
 import ProjectsList from '../components/admin/projects/ProjectsList';
 import TaskStatus from '../components/admin/tasks/TaskStatus';
+import ActivityLog from '../components/admin/activity/ActivityLog';
 import Settings from '../components/admin/settings/Settings';
 
 const AdminPage = () => {
@@ -20,6 +21,7 @@ const AdminPage = () => {
             <Route path="/users" element={<UsersList />} />
             <Route path="/projects" element={<ProjectsList />} />
             <Route path="/tasks" element={<TaskStatus />} />
+            <Route path="/activity" element={<ActivityLog />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </div>
@@ -29,6 +31,7 @@ const AdminPage = () => {
 };
 
 export default AdminPage;
+
 
 
 

@@ -114,7 +114,7 @@ const TasksList = () => {
                   <th style={{ padding: '1.25rem' }}>Task Designation</th>
                   <th>Assignment</th>
                   <th>Affiliation</th>
-                  <th>Classification</th>
+                  <th style={{ minWidth: '150px' }}>Classification</th>
                   <th>Timeline</th>
                   <th></th>
                 </tr>
@@ -150,10 +150,18 @@ const TasksList = () => {
                         <span style={{ fontWeight: 500 }}>{task.project_name || 'Direct Task'}</span>
                       </div>
                     </td>
-                    <td>
+                    <td style={{ minWidth: '150px' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <StatusBadge status={task.status} />
-                        <span className={`badge badge-${task.priority}`} style={{ fontSize: '0.65rem', textTransform: 'uppercase', width: 'fit-content' }}>
+                        <div style={{ width: '100px' }}>
+                          <StatusBadge status={task.status} />
+                        </div>
+                        <span className={`badge badge-${task.priority}`} style={{
+                          fontSize: '0.65rem',
+                          textTransform: 'uppercase',
+                          width: '100px',
+                          textAlign: 'center',
+                          display: 'inline-block'
+                        }}>
                           {task.priority}
                         </span>
                       </div>

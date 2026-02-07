@@ -1,12 +1,13 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FolderKanban, CheckSquare, Settings, Briefcase } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, CheckSquare, Activity, Settings, Briefcase } from 'lucide-react';
 
 const ManagerSidebar = () => {
   const menuItems = [
     { path: '/manager', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { path: '/manager/projects', label: 'Assigned Projects', icon: <FolderKanban size={20} /> },
     { path: '/manager/tasks', label: 'Global Tasks', icon: <CheckSquare size={20} /> },
+    { path: '/manager/activity', label: 'Activity Log', icon: <Activity size={20} /> },
     { path: '/manager/settings', label: 'My Settings', icon: <Settings size={20} /> },
   ];
 
@@ -55,6 +56,7 @@ const ManagerSidebar = () => {
 };
 
 export default ManagerSidebar;
+
 
 
 

@@ -3,12 +3,14 @@ require_once __DIR__ . '/../../config/headers.php';
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../middleware/role.php';
 require_once __DIR__ . '/../../models/Task.php';
+require_once __DIR__ . '/../../models/ActivityLogger.php';
 
 $user_data = requireManager();
 
 $database = new Database();
 $db = $database->getConnection();
 $task = new Task($db);
+$logger = new ActivityLogger($db);
 
 $data = json_decode(file_get_contents("php://input"));
 
@@ -33,24 +35,27 @@ if (!empty($data->task_id) && !empty($data->assigned_to)) {
     $stmt->bindParam(":id", $task->id);
 
     if ($stmt->execute()) {
-        // Log Activity
+    if ($stmt->execute()) {
+        // Log Activity with new ActivityLogger
         try {
-            $activity_query = "INSERT INTO task_activity (task_id, user_id, action, description) 
-                             VALUES (:task_id, :user_id, 'assigned', :description)";
-            
-            // Get assignee name for friendly description
+            // Get assignee name
             $user_stmt = $db->prepare("SELECT full_name FROM users WHERE id = ?");
             $user_stmt->execute([$task->assigned_to]);
             $assignee = $user_stmt->fetch(PDO::FETCH_ASSOC);
             $assignee_name = $assignee ? $assignee['full_name'] : 'User #' . $task->assigned_to;
             
-            $description = "assigned task to " . $assignee_name;
+            // Get task title
+            $task_stmt = $db->prepare("SELECT title FROM tasks WHERE id = ?");
+            $task_stmt->execute([$task->id]);
+            $task_info = $task_stmt->fetch(PDO::FETCH_ASSOC);
+            $task_title = $task_info ? $task_info['title'] : 'Unknown Task';
             
-            $activity_stmt = $db->prepare($activity_query);
-            $activity_stmt->bindParam(":task_id", $task->id);
-            $activity_stmt->bindParam(":user_id", $user_data['id']);
-            $activity_stmt->bindParam(":description", $description);
-            $activity_stmt->execute();
+            $logger->logTaskAssigned(
+                $user_data['id'],
+                $task->id,
+                $task_title,
+                $assignee_name
+            );
         } catch (Exception $e) {
             // Ignore logging errors to not break the flow
         }
@@ -66,6 +71,7 @@ if (!empty($data->task_id) && !empty($data->assigned_to)) {
     echo json_encode(["message" => "Task ID and assigned_to are required"]);
 }
 ?>
+
 
 
 

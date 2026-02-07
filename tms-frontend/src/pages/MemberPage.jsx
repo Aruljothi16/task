@@ -6,6 +6,7 @@ import MemberDashboard from '../components/member/dashboard/MemberDashboard';
 import MyTasks from '../components/member/tasks/MyTasks';
 import TaskDetails from '../components/member/tasks/TaskDetails';
 import Settings from '../components/member/settings/Settings';
+import MemberActivityLog from '../components/member/activity/MemberActivityLog';
 
 const MemberPage = () => {
   return (
@@ -18,6 +19,7 @@ const MemberPage = () => {
             <Route path="/" element={<MemberDashboard />} />
             <Route path="/tasks" element={<MyTasks />} />
             <Route path="/tasks/:id" element={<TaskDetails />} />
+            <Route path="/activity" element={<MemberActivityLog />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </div>
@@ -27,6 +29,7 @@ const MemberPage = () => {
 };
 
 export default MemberPage;
+
 
 
 

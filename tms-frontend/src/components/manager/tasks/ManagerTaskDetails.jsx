@@ -174,7 +174,7 @@ const ManagerTaskDetails = () => {
                     <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>Task Intelligence</h1>
                     <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Deep dive into task progress, feedback, and deliverables.</p>
                 </div>
-                {task && task.status === 'completed' && (
+                {task && task.status === 'completed' && !members.find(m => m.id === task.assigned_to && m.designation === 'Tester') && (
                     <button
                         className="btn btn-primary"
                         onClick={() => setShowAssignModal(true)}

@@ -3,12 +3,14 @@ require_once __DIR__ . '/../../config/headers.php';
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../middleware/role.php';
 require_once __DIR__ . '/../../models/Project.php';
+require_once __DIR__ . '/../../models/ActivityLogger.php';
 
 $user_data = requireManager();
 
 $database = new Database();
 $db = $database->getConnection();
 $project = new Project($db);
+$logger = new ActivityLogger($db);
 
 $data = json_decode(file_get_contents("php://input"));
 
@@ -35,6 +37,13 @@ if (!empty($data->name)) {
     $project->priority = $data->priority ?? 'medium';
 
     if ($project->create()) {
+        // Log project creation
+        $logger->logProjectCreated(
+            $user_data['id'],
+            $project->id,
+            $project->name
+        );
+        
         http_response_code(201);
         echo json_encode([
             "message" => "Project created successfully",
@@ -55,6 +64,7 @@ if (!empty($data->name)) {
     echo json_encode(["message" => "Project name and manager ID are required"]);
 }
 ?>
+
 
 
 

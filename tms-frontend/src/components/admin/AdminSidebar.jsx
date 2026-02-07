@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, FolderKanban, CheckSquare, Settings, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, Users, FolderKanban, CheckSquare, Activity, Settings, ShieldCheck } from 'lucide-react';
 
 const AdminSidebar = () => {
   const menuItems = [
@@ -8,6 +8,7 @@ const AdminSidebar = () => {
     { path: '/admin/users', label: 'User Management', icon: <Users size={20} /> },
     { path: '/admin/projects', label: 'All Projects', icon: <FolderKanban size={20} /> },
     { path: '/admin/tasks', label: 'Task Tracking', icon: <CheckSquare size={20} /> },
+    { path: '/admin/activity', label: 'Activity Log', icon: <Activity size={20} /> },
     { path: '/admin/settings', label: 'System Settings', icon: <Settings size={20} /> },
   ];
 
@@ -56,6 +57,7 @@ const AdminSidebar = () => {
 };
 
 export default AdminSidebar;
+
 
 
 

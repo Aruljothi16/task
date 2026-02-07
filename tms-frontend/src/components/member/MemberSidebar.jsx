@@ -1,11 +1,12 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, CheckSquare, Settings, User } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Settings, User, Activity } from 'lucide-react';
 
 const MemberSidebar = () => {
   const menuItems = [
     { path: '/member', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { path: '/member/tasks', label: 'Assigned Tasks', icon: <CheckSquare size={20} /> },
+    { path: '/member/activity', label: 'Activity Logs', icon: <Activity size={20} /> },
     { path: '/member/settings', label: 'My Settings', icon: <Settings size={20} /> },
   ];
 
@@ -54,9 +55,3 @@ const MemberSidebar = () => {
 };
 
 export default MemberSidebar;
-
-
-
-
-
-

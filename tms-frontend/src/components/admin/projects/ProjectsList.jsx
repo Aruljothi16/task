@@ -429,8 +429,7 @@ export default function ProjectsList() {
           />
         </div>
 
-        <div style={styles.filterGroup}>
-          <Filter size={16} style={{ opacity: 0.6 }} />
+        <div style={{ ...styles.filterGroup, alignItems: 'center' }}>
           <select value={filterStatus} onChange={(e) => { setFilterStatus(e.target.value); setCurrentPage(1); }} style={styles.filterSelect}>
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
@@ -834,7 +833,7 @@ export default function ProjectsList() {
 
 const styles = {
   container: { padding: '20px', minHeight: '100vh', boxSizing: 'border-box' },
-  header: { display: 'flex', justifyContent: 'space-between', marginBottom: '30px', flexWrap: 'wrap', gap: '20px' },
+  header: { display: 'flex', justifyContent: 'space-between', marginBottom: '30px', flexWrap: 'wrap', gap: '20px', alignItems: 'center' },
   title: { fontSize: '28px', fontWeight: '800', margin: '0 0 8px 0', background: 'linear-gradient(135deg, var(--primary), var(--accent))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' },
   subtitle: { color: 'var(--text-secondary)', fontSize: '15px', margin: 0 },
   statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '30px' },
@@ -844,8 +843,8 @@ const styles = {
   headerActions: { display: 'flex', gap: '12px' },
   exportButton: { display: 'flex', gap: '8px', padding: '10px 16px', background: 'white', border: '1px solid var(--border-light)', borderRadius: '10px', cursor: 'pointer', alignItems: 'center' },
   refreshButton: { display: 'none' },
-  createButton: { display: 'flex', gap: '8px', padding: '8px 16px', background: 'var(--primary)', border: 'none', borderRadius: '8px', color: 'white', fontWeight: '600', cursor: 'pointer', alignItems: 'center' },
-  createButtonSmall: { display: 'flex', gap: '6px', padding: '8px 14px', background: 'var(--primary)', border: 'none', borderRadius: '8px', color: 'white', cursor: 'pointer', margin: '16px auto' },
+  createButton: { display: 'flex', gap: '6px', padding: '10px 20px', background: 'var(--primary)', border: 'none', borderRadius: '8px', color: 'white', fontWeight: '600', cursor: 'pointer', alignItems: 'center', whiteSpace: 'nowrap' },
+  createButtonSmall: { display: 'flex', gap: '6px', padding: '6px 12px', background: 'var(--primary)', border: 'none', borderRadius: '8px', color: 'white', cursor: 'pointer', margin: '16px auto' },
   filtersContainer: { display: 'flex', gap: '15px', marginBottom: '30px', flexWrap: 'wrap', padding: '20px', background: 'white', borderRadius: '16px', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-light)' },
   searchBox: { flex: 1, position: 'relative', minWidth: '250px' },
   searchIcon: { position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' },
@@ -903,6 +902,7 @@ const styles = {
   detailsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' },
   detailItem: { fontSize: '14px', color: 'var(--text-main)' }
 };
+
 
 
 

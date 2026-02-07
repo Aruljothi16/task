@@ -31,6 +31,7 @@ export default function UsersList() {
     name: "",
     email: "",
     role: "member",
+    designation: "Developer",
     password: "" // Generated automatically
   });
 
@@ -95,7 +96,6 @@ export default function UsersList() {
       const data = await adminService.getUsers();
       if (data) {
         setUsers(data);
-        showNotification("Users loaded successfully", "success", 3000);
       } else {
         setError("Failed to fetch users");
         showNotification("Failed to fetch users", "error");
@@ -120,6 +120,7 @@ export default function UsersList() {
       name: "",
       email: "",
       role: "member",
+      designation: "Developer",
       password: ""
     });
     setShowAddModal(true);
@@ -143,7 +144,7 @@ export default function UsersList() {
       email: newUser.email,
       role: newUser.role,
       password: generatedPassword,
-      designation: newUser.role === 'member' ? 'Member' : 'Manager'
+      designation: newUser.role === 'member' ? newUser.designation : (newUser.role === 'manager' ? 'Manager' : 'Administrator')
     };
 
     try {
@@ -521,13 +522,38 @@ export default function UsersList() {
               </div>
               <div style={styles.formGroup}>
                 <label style={styles.label}>Role <span style={styles.required}>*</span></label>
-                <select value={newUser.role} onChange={(e) => setNewUser({ ...newUser, role: e.target.value })} style={styles.select}>
+                <select
+                  value={newUser.role}
+                  onChange={(e) => {
+                    const role = e.target.value;
+                    // Reset designation if role is not member
+                    const designation = role === 'member' ? 'Developer' : (role === 'manager' ? 'Manager' : 'Administrator');
+                    setNewUser({ ...newUser, role, designation });
+                  }}
+                  style={styles.select}
+                >
                   <option value="member">Member</option>
                   <option value="manager">Manager</option>
                   <option value="admin">Administrator</option>
                 </select>
-                <div style={styles.helpText}>Default password will be generated automatically</div>
               </div>
+
+              {newUser.role === 'member' && (
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Designation <span style={styles.required}>*</span></label>
+                  <select
+                    value={newUser.designation || 'Developer'}
+                    onChange={(e) => setNewUser({ ...newUser, designation: e.target.value })}
+                    style={styles.select}
+                  >
+                    <option value="Developer">Developer</option>
+                    <option value="Tester">Tester</option>
+
+                  </select>
+                </div>
+              )}
+
+              <div style={styles.helpText}>Default password will be generated automatically</div>
             </div>
             <div style={styles.modalFooter}>
               <button style={styles.cancelButton} onClick={() => setShowAddModal(false)}>Cancel</button>
@@ -537,103 +563,136 @@ export default function UsersList() {
             </div>
           </div>
         </div>
-      )}
+      )
+      }
 
       {/* Password Details Modal */}
-      {showPasswordModal && passwordDetails && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modal}>
-            <div style={styles.modalHeader}>
-              <h2 style={styles.modalTitle}>User Created Successfully!</h2>
-              <button style={styles.modalClose} onClick={() => { setShowPasswordModal(false); setPasswordDetails(null); }}><X size={20} /></button>
-            </div>
-            <div style={styles.modalBody}>
-              <div style={styles.successMessage}>
-                <CheckCircle2 size={48} style={{ color: '#10b981', marginBottom: 20 }} />
-                <h3 style={{ margin: '0 0 12px 0', color: '#1e293b' }}>User Account Created</h3>
-                <div style={styles.credentialsBox}>
-                  <div style={styles.credentialItem}><strong>Email:</strong> {passwordDetails.email}</div>
-                  <div style={styles.credentialItem}><strong>Password:</strong> <span style={styles.passwordDisplay}>{passwordDetails.password}</span></div>
+      {
+        showPasswordModal && passwordDetails && (
+          <div style={styles.modalOverlay}>
+            <div style={styles.modal}>
+              <div style={styles.modalHeader}>
+                <h2 style={styles.modalTitle}>User Created Successfully!</h2>
+                <button style={styles.modalClose} onClick={() => { setShowPasswordModal(false); setPasswordDetails(null); }}><X size={20} /></button>
+              </div>
+              <div style={styles.modalBody}>
+                <div style={styles.successMessage}>
+                  <CheckCircle2 size={48} style={{ color: '#10b981', marginBottom: 20 }} />
+                  <h3 style={{ margin: '0 0 12px 0', color: '#1e293b' }}>User Account Created</h3>
+                  <div style={styles.credentialsBox}>
+                    <div style={styles.credentialItem}><strong>Email:</strong> {passwordDetails.email}</div>
+                    <div style={styles.credentialItem}><strong>Password:</strong> <span style={styles.passwordDisplay}>{passwordDetails.password}</span></div>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div style={styles.modalFooter}>
-              <button style={styles.saveButton} onClick={() => { setShowPasswordModal(false); setPasswordDetails(null); }}>Done</button>
+              <div style={styles.modalFooter}>
+                <button style={styles.saveButton} onClick={() => { setShowPasswordModal(false); setPasswordDetails(null); }}>Done</button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Edit User Modal */}
-      {showEditModal && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modal}>
-            <div style={styles.modalHeader}>
-              <h2 style={styles.modalTitle}>Edit User</h2>
-              <button style={styles.modalClose} onClick={() => setShowEditModal(false)}><X size={20} /></button>
-            </div>
-            <div style={styles.modalBody}>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Full Name</label>
-                <div style={styles.inputWithIcon}>
-                  <User style={styles.inputIcon} />
-                  <input type="text" value={editUser.full_name} onChange={(e) => setEditUser({ ...editUser, full_name: e.target.value })} style={styles.input} />
+      {
+        showEditModal && (
+          <div style={styles.modalOverlay}>
+            <div style={styles.modal}>
+              <div style={styles.modalHeader}>
+                <h2 style={styles.modalTitle}>Edit User</h2>
+                <button style={styles.modalClose} onClick={() => setShowEditModal(false)}><X size={20} /></button>
+              </div>
+              <div style={styles.modalBody}>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Full Name</label>
+                  <div style={styles.inputWithIcon}>
+                    <User style={styles.inputIcon} />
+                    <input type="text" value={editUser.full_name} onChange={(e) => setEditUser({ ...editUser, full_name: e.target.value })} style={styles.input} />
+                  </div>
                 </div>
-              </div>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Email Address</label>
-                <div style={styles.inputWithIcon}>
-                  <Mail style={styles.inputIcon} />
-                  <input type="email" value={editUser.email} onChange={(e) => setEditUser({ ...editUser, email: e.target.value })} style={styles.input} />
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Email Address</label>
+                  <div style={styles.inputWithIcon}>
+                    <Mail style={styles.inputIcon} />
+                    <input type="email" value={editUser.email} onChange={(e) => setEditUser({ ...editUser, email: e.target.value })} style={styles.input} />
+                  </div>
                 </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Role</label>
+                  <select
+                    value={editUser.role}
+                    onChange={(e) => {
+                      const role = e.target.value;
+                      const designation = role === 'member' ? (editUser.designation || 'Developer') : (role === 'manager' ? 'Manager' : 'Administrator');
+                      setEditUser({ ...editUser, role, designation });
+                    }}
+                    style={styles.select}
+                  >
+                    <option value="member">Member</option>
+                    <option value="manager">Manager</option>
+                    <option value="admin">Administrator</option>
+                  </select>
+                </div>
+
+                {editUser.role === 'member' && (
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Designation</label>
+                    <select
+                      value={editUser.designation || 'Developer'}
+                      onChange={(e) => setEditUser({ ...editUser, designation: e.target.value })}
+                      style={styles.select}
+                    >
+                      <option value="Developer">Developer</option>
+                      <option value="Tester">Tester</option>
+                      <option value="Designer">Designer</option>
+                      <option value="Frontend Developer">Frontend Developer</option>
+                      <option value="Backend Developer">Backend Developer</option>
+                      <option value="Business Analyst">Business Analyst</option>
+                    </select>
+                  </div>
+                )}
               </div>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Role</label>
-                <select value={editUser.role} onChange={(e) => setEditUser({ ...editUser, role: e.target.value })} style={styles.select}>
-                  <option value="member">Member</option>
-                  <option value="manager">Manager</option>
-                  <option value="admin">Administrator</option>
-                </select>
+              <div style={styles.modalFooter}>
+                <button style={styles.cancelButton} onClick={() => setShowEditModal(false)}>Cancel</button>
+                <button style={styles.saveButton} onClick={handleUpdateUser}><Check size={18} style={{ marginRight: 8 }} /> Update User</button>
               </div>
-            </div>
-            <div style={styles.modalFooter}>
-              <button style={styles.cancelButton} onClick={() => setShowEditModal(false)}>Cancel</button>
-              <button style={styles.saveButton} onClick={handleUpdateUser}><Check size={18} style={{ marginRight: 8 }} /> Update User</button>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modal}>
-            <div style={styles.modalHeader}>
-              <h2 style={styles.modalTitle}>Confirm Delete</h2>
-              <button style={styles.modalClose} onClick={() => setShowDeleteModal(false)}><X size={20} /></button>
-            </div>
-            <div style={styles.modalBody}>
-              <div style={styles.warningMessage}>
-                <Trash2 size={32} style={{ color: '#ef4444', marginBottom: 16 }} />
-                <h3 style={{ margin: '0 0 12px 0', color: '#1e293b' }}>Delete {selectedUser?.full_name}?</h3>
-                <p>Are you sure? This cannot be undone.</p>
+      {
+        showDeleteModal && (
+          <div style={styles.modalOverlay}>
+            <div style={styles.modal}>
+              <div style={styles.modalHeader}>
+                <h2 style={styles.modalTitle}>Confirm Delete</h2>
+                <button style={styles.modalClose} onClick={() => setShowDeleteModal(false)}><X size={20} /></button>
+              </div>
+              <div style={styles.modalBody}>
+                <div style={styles.warningMessage}>
+                  <Trash2 size={32} style={{ color: '#ef4444', marginBottom: 16 }} />
+                  <h3 style={{ margin: '0 0 12px 0', color: '#1e293b' }}>Delete {selectedUser?.full_name}?</h3>
+                  <p>Are you sure? This cannot be undone.</p>
+                </div>
+              </div>
+              <div style={styles.modalFooter}>
+                <button style={styles.cancelButton} onClick={() => setShowDeleteModal(false)}>Cancel</button>
+                <button style={{ ...styles.saveButton, background: '#ef4444' }} onClick={handleDeleteUser}><Trash2 size={18} style={{ marginRight: 8 }} /> Delete User</button>
               </div>
             </div>
-            <div style={styles.modalFooter}>
-              <button style={styles.cancelButton} onClick={() => setShowDeleteModal(false)}>Cancel</button>
-              <button style={{ ...styles.saveButton, background: '#ef4444' }} onClick={handleDeleteUser}><Trash2 size={18} style={{ marginRight: 8 }} /> Delete User</button>
-            </div>
           </div>
-        </div>
-      )}
+        )
+      }
       <style>{`@keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } } @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
-    </div>
+    </div >
   );
 }
 
 const styles = {
   container: { padding: '20px', minHeight: '100vh', boxSizing: 'border-box' },
-  header: { display: 'flex', justifyContent: 'space-between', marginBottom: '30px', flexWrap: 'wrap', gap: '20px' },
+  header: { display: 'flex', justifyContent: 'space-between', marginBottom: '30px', flexWrap: 'wrap', gap: '20px', alignItems: 'center' },
   title: { fontSize: '28px', fontWeight: '800', margin: '0 0 8px 0', background: 'linear-gradient(135deg, var(--primary), var(--accent))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' },
   subtitle: { color: 'var(--text-secondary)', fontSize: '15px', margin: 0 },
   errorContainer: { padding: '15px', background: '#fee2e2', border: '1px solid #fecaca', borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
@@ -642,8 +701,7 @@ const styles = {
   headerActions: { display: 'flex', gap: '12px' },
   exportButton: { display: 'flex', gap: '8px', padding: '10px 16px', background: 'white', border: '1px solid var(--border-light)', borderRadius: '10px', cursor: 'pointer', alignItems: 'center' },
   refreshButton: { display: 'none' },
-  addButton: { display: 'flex', gap: '8px', padding: '8px 16px', background: 'var(--primary)', border: 'none', borderRadius: '8px', color: 'white', fontWeight: '600', cursor: 'pointer', alignItems: 'center' },
-  filtersContainer: { display: 'flex', gap: '15px', marginBottom: '24px', flexWrap: 'wrap', padding: '20px', background: 'white', borderRadius: '16px', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-light)' },
+  addButton: { display: 'flex', gap: '8px', padding: '10px 20px', background: 'var(--primary)', border: 'none', borderRadius: '8px', color: 'white', fontWeight: '600', cursor: 'pointer', alignItems: 'center', whiteSpace: 'nowrap' }, filtersContainer: { display: 'flex', gap: '15px', marginBottom: '24px', flexWrap: 'wrap', padding: '20px', background: 'white', borderRadius: '16px', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-light)' },
   searchBox: { flex: 1, position: 'relative', minWidth: '250px' },
   searchIcon: { position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' },
   searchInput: { width: '100%', padding: '12px 20px 12px 45px', borderRadius: '10px', border: '1px solid var(--border-light)', outline: 'none' },
@@ -697,6 +755,7 @@ const styles = {
   saveButton: { padding: '10px 20px', background: 'var(--primary)', border: 'none', borderRadius: '8px', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center' },
   addButtonSmall: { display: 'flex', gap: '8px', padding: '10px 16px', background: 'var(--primary)', border: 'none', borderRadius: '10px', color: 'white', cursor: 'pointer', margin: '16px auto' },
 };
+
 
 
 

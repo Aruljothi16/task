@@ -2,11 +2,13 @@
 require_once __DIR__ . '/../../config/headers.php';
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../middleware/role.php';
+require_once __DIR__ . '/../../models/ActivityLogger.php';
 
 $user_data = authenticate();
 
 $database = new Database();
 $db = $database->getConnection();
+$logger = new ActivityLogger($db);
 
 // Check if file and task_id are present
 if (!isset($_FILES['file']) || !isset($_POST['task_id'])) {
@@ -96,15 +98,13 @@ try {
         if ($stmt->execute()) {
             $attachment_id = $db->lastInsertId();
             
-            // Log activity
-            $log_query = "INSERT INTO task_activity (task_id, user_id, action, description) 
-                          VALUES (:task_id, :user_id, 'file_uploaded', :description)";
-            $log_stmt = $db->prepare($log_query);
-            $log_stmt->bindParam(":task_id", $task_id);
-            $log_stmt->bindParam(":user_id", $user_data['id']);
-            $desc = "Uploaded file: " . $file['name'];
-            $log_stmt->bindParam(":description", $desc);
-            $log_stmt->execute();
+            // Log activity with new ActivityLogger
+            $logger->logTaskAttachmentAdded(
+                $user_data['id'],
+                $task_id,
+                $task['title'],
+                $file['name']
+            );
             
             http_response_code(201);
             echo json_encode([
