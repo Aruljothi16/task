@@ -174,7 +174,7 @@ const ManagerTaskDetails = () => {
                     <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>Task Intelligence</h1>
                     <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Deep dive into task progress, feedback, and deliverables.</p>
                 </div>
-                {task && task.status === 'completed' && !members.find(m => m.id === task.assigned_to && m.designation === 'Tester') && (
+                {task && task.status === 'completed' && task.assigned_to_designation?.toLowerCase() !== 'tester' && (
                     <button
                         className="btn btn-primary"
                         onClick={() => setShowAssignModal(true)}
@@ -404,18 +404,26 @@ const ManagerTaskDetails = () => {
                             value={selectedTester}
                             onChange={(e) => setSelectedTester(e.target.value)}
                         >
-                            <option value="">-- Choose a Tester --</option>
-                            {members
-                                .filter(m => m.designation === 'Tester' || m.role === 'admin') // Include admins or just testers? Stick to Testers.
-                                .map(member => (
+                            <option value="">-- Choose a Member --</option>
+                            {/* Sort testers to the top */}
+                            {[...members].sort((a, b) => {
+                                const isATester = a?.designation?.toLowerCase() === 'tester' || a?.role === 'tester';
+                                const isBTester = b?.designation?.toLowerCase() === 'tester' || b?.role === 'tester';
+                                if (isATester && !isBTester) return -1;
+                                if (!isATester && isBTester) return 1;
+                                return a.full_name.localeCompare(b.full_name);
+                            }).map(member => {
+                                const isTester = member?.designation?.toLowerCase() === 'tester' || member?.role === 'tester';
+                                return (
                                     <option key={member.id} value={member.id}>
-                                        {member.full_name} ({member.designation || member.role})
+                                        {member.full_name} {isTester ? '(⭐ Tester)' : `(${member.designation || member.role})`}
                                     </option>
-                                ))}
+                                );
+                            })}
                         </select>
-                        {members.filter(m => m.designation === 'Tester').length === 0 && (
-                            <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#dc2626' }}>
-                                Warning: No users found with 'Tester' designation.
+                        {members.filter(m => m?.designation?.toLowerCase() === 'tester' || m?.role === 'tester').length === 0 && (
+                            <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#854d0e' }}>
+                                Tip: No users specifically designated as 'Tester' found. You can assign to any member for testing.
                             </div>
                         )}
                     </div>

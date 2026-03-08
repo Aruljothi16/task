@@ -7,7 +7,8 @@ import {
   Activity,
   AlertCircle,
   Users,
-  LayoutGrid
+  LayoutGrid,
+  Target
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,6 +16,8 @@ const AdminDashboard = () => {
   const [projects, setProjects] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [teamMood, setTeamMood] = useState({ mood: 'neutral', score: 0 });
+  const [inertia, setInertia] = useState(null);
   const [stats, setStats] = useState({
     totalProjects: 0,
     completed: 0,
@@ -40,6 +43,21 @@ const AdminDashboard = () => {
         adminService.getProjects(),
         adminService.getUsers()
       ]);
+
+      // Fetch AI data separately to prevent blocking core stats if AI is down
+      try {
+        const moodData = await adminService.getTeamMood();
+        if (moodData) setTeamMood(moodData);
+      } catch (e) {
+        console.warn("AI Mood Service unavailable");
+      }
+
+      try {
+        const inertiaData = await adminService.getProjectInertia();
+        if (inertiaData) setInertia(inertiaData.projects_inertia || []);
+      } catch (e) {
+        console.warn("AI Inertia Service unavailable");
+      }
 
       if (projectsData) {
         setProjects(projectsData);
@@ -223,7 +241,7 @@ const AdminDashboard = () => {
                   marginBottom: "12px",
                   lineHeight: "1.3"
                 }}>
-                  Completed
+                  Projects Completed
                 </div>
                 <CheckCircle2 size={20} style={{ opacity: 0.8 }} />
               </div>
@@ -374,6 +392,8 @@ const AdminDashboard = () => {
                 {loading ? "-" : stats.totalUsers}
               </div>
             </div>
+
+
           </div>
 
           {/* Three Column Layout */}
@@ -386,11 +406,11 @@ const AdminDashboard = () => {
           }}>
             {/* Recent Projects Card */}
             <div style={{
-              background: "#fff",
+              background: "var(--bg-surface)",
               borderRadius: "16px",
               padding: "25px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
-              border: "1px solid #f1f5f9",
+              boxShadow: "var(--shadow-sm)",
+              border: "1px solid var(--border-light)",
               minHeight: "300px",
               display: "flex",
               flexDirection: "column",
@@ -405,7 +425,7 @@ const AdminDashboard = () => {
                 <h3 style={{
                   fontSize: "18px",
                   fontWeight: "600",
-                  color: "#1e293b",
+                  color: "var(--text-main)",
                   margin: 0,
                   lineHeight: "1.3"
                 }}>
@@ -413,8 +433,8 @@ const AdminDashboard = () => {
                 </h3>
                 <span style={{
                   fontSize: '12px',
-                  color: '#64748b',
-                  background: '#f1f5f9',
+                  color: 'var(--text-secondary)',
+                  background: 'var(--bg-body)',
                   padding: '4px 8px',
                   borderRadius: '6px'
                 }}>
@@ -424,7 +444,7 @@ const AdminDashboard = () => {
 
               {loading ? (
                 <div style={{
-                  color: "#64748b",
+                  color: "var(--text-secondary)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -436,7 +456,7 @@ const AdminDashboard = () => {
                 </div>
               ) : recentProjects.length === 0 ? (
                 <div style={{
-                  color: "#64748b",
+                  color: "var(--text-secondary)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -456,13 +476,13 @@ const AdminDashboard = () => {
                   {recentProjects.map((project) => (
                     <div key={project.id} style={{
                       padding: '12px',
-                      background: '#f8fafc',
+                      background: 'var(--bg-body)',
                       borderRadius: '10px',
-                      border: '1px solid #f1f5f9',
+                      border: '1px solid var(--border-light)',
                       transition: 'all 0.3s'
                     }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
-                      onMouseLeave={(e) => e.currentTarget.style.background = '#f8fafc'}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-surface)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'var(--bg-body)'}
                     >
                       <div style={{
                         display: 'flex',
@@ -473,7 +493,7 @@ const AdminDashboard = () => {
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',
-                          color: '#1e293b',
+                          color: 'var(--text-main)',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
@@ -494,14 +514,14 @@ const AdminDashboard = () => {
                       </div>
                       <div style={{
                         fontSize: '12px',
-                        color: '#64748b',
+                        color: 'var(--text-secondary)',
                         marginBottom: '4px'
                       }}>
                         Manager: {project.manager_name || 'Unassigned'}
                       </div>
                       <div style={{
                         fontSize: '12px',
-                        color: '#94a3b8'
+                        color: 'var(--text-muted)'
                       }}>
                         Due: {project.due_date ? new Date(project.due_date).toLocaleDateString() : 'No date'}
                       </div>
@@ -513,11 +533,11 @@ const AdminDashboard = () => {
 
             {/* Project Status Distribution Card */}
             <div style={{
-              background: "#fff",
+              background: "var(--bg-surface)",
               borderRadius: "16px",
               padding: "25px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
-              border: "1px solid #f1f5f9",
+              boxShadow: "var(--shadow-sm)",
+              border: "1px solid var(--border-light)",
               minHeight: "300px",
               display: "flex",
               flexDirection: "column",
@@ -526,7 +546,7 @@ const AdminDashboard = () => {
               <h3 style={{
                 fontSize: "18px",
                 fontWeight: "600",
-                color: "#1e293b",
+                color: "var(--text-main)",
                 margin: "0 0 20px 0",
                 lineHeight: "1.3"
               }}>
@@ -535,7 +555,7 @@ const AdminDashboard = () => {
 
               {loading ? (
                 <div style={{
-                  color: "#64748b",
+                  color: "var(--text-secondary)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -581,7 +601,7 @@ const AdminDashboard = () => {
                             }} />
                             <span style={{
                               fontSize: '14px',
-                              color: '#1e293b',
+                              color: 'var(--text-main)',
                               fontWeight: '500'
                             }}>
                               {label}
@@ -589,7 +609,7 @@ const AdminDashboard = () => {
                           </div>
                           <span style={{
                             fontSize: '14px',
-                            color: '#64748b',
+                            color: 'var(--text-secondary)',
                             fontWeight: '600'
                           }}>
                             {count} ({percentage}%)
@@ -597,7 +617,7 @@ const AdminDashboard = () => {
                         </div>
                         <div style={{
                           height: '6px',
-                          background: '#f1f5f9',
+                          background: 'var(--bg-body)',
                           borderRadius: '3px',
                           overflow: 'hidden'
                         }}>
@@ -616,13 +636,15 @@ const AdminDashboard = () => {
               )}
             </div>
 
+
+
             {/* User Statistics Card */}
             <div style={{
-              background: "#fff",
+              background: "var(--bg-surface)",
               borderRadius: "16px",
               padding: "25px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
-              border: "1px solid #f1f5f9",
+              boxShadow: "var(--shadow-sm)",
+              border: "1px solid var(--border-light)",
               minHeight: "300px",
               display: "flex",
               flexDirection: "column",
@@ -631,7 +653,7 @@ const AdminDashboard = () => {
               <h3 style={{
                 fontSize: "18px",
                 fontWeight: "600",
-                color: "#1e293b",
+                color: "var(--text-main)",
                 margin: "0 0 20px 0",
                 lineHeight: "1.3"
               }}>
@@ -640,7 +662,7 @@ const AdminDashboard = () => {
 
               {loading ? (
                 <div style={{
-                  color: "#64748b",
+                  color: "var(--text-secondary)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -660,9 +682,9 @@ const AdminDashboard = () => {
                   {/* Active Users */}
                   <div style={{
                     padding: '16px',
-                    background: '#f8fafc',
+                    background: 'var(--bg-body)',
                     borderRadius: '12px',
-                    border: '1px solid #f1f5f9'
+                    border: '1px solid var(--border-light)'
                   }}>
                     <div style={{
                       display: 'flex',
@@ -672,7 +694,7 @@ const AdminDashboard = () => {
                     }}>
                       <div style={{
                         fontSize: '14px',
-                        color: '#64748b',
+                        color: 'var(--text-secondary)',
                         fontWeight: '500'
                       }}>
                         Active Users
@@ -687,7 +709,7 @@ const AdminDashboard = () => {
                     </div>
                     <div style={{
                       fontSize: '12px',
-                      color: '#94a3b8'
+                      color: 'var(--text-muted)'
                     }}>
                       Out of {stats.totalUsers} total users
                     </div>
@@ -696,13 +718,13 @@ const AdminDashboard = () => {
                   {/* User Role Distribution */}
                   <div style={{
                     padding: '16px',
-                    background: '#f8fafc',
+                    background: 'var(--bg-body)',
                     borderRadius: '12px',
-                    border: '1px solid #f1f5f9'
+                    border: '1px solid var(--border-light)'
                   }}>
                     <div style={{
                       fontSize: '14px',
-                      color: '#64748b',
+                      color: 'var(--text-secondary)',
                       fontWeight: '500',
                       marginBottom: '12px'
                     }}>
@@ -736,14 +758,14 @@ const AdminDashboard = () => {
                             }} />
                             <span style={{
                               fontSize: '13px',
-                              color: '#1e293b'
+                              color: 'var(--text-main)'
                             }}>
                               {item.label}
                             </span>
                           </div>
                           <span style={{
                             fontSize: '14px',
-                            color: '#64748b',
+                            color: 'var(--text-secondary)',
                             fontWeight: '600'
                           }}>
                             {item.count}
@@ -761,9 +783,9 @@ const AdminDashboard = () => {
                   }}>
                     <div style={{
                       padding: '12px',
-                      background: '#f8fafc',
+                      background: 'var(--bg-body)',
                       borderRadius: '10px',
-                      border: '1px solid #f1f5f9',
+                      border: '1px solid var(--border-light)',
                       textAlign: 'center'
                     }}>
                       <div style={{
@@ -776,16 +798,16 @@ const AdminDashboard = () => {
                       </div>
                       <div style={{
                         fontSize: '12px',
-                        color: '#64748b'
+                        color: 'var(--text-secondary)'
                       }}>
                         Managers
                       </div>
                     </div>
                     <div style={{
                       padding: '12px',
-                      background: '#f8fafc',
+                      background: 'var(--bg-body)',
                       borderRadius: '10px',
-                      border: '1px solid #f1f5f9',
+                      border: '1px solid var(--border-light)',
                       textAlign: 'center'
                     }}>
                       <div style={{
@@ -798,7 +820,7 @@ const AdminDashboard = () => {
                       </div>
                       <div style={{
                         fontSize: '12px',
-                        color: '#64748b'
+                        color: 'var(--text-secondary)'
                       }}>
                         Pending Projects
                       </div>

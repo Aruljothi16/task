@@ -35,7 +35,6 @@ if (!empty($data->task_id) && !empty($data->assigned_to)) {
     $stmt->bindParam(":id", $task->id);
 
     if ($stmt->execute()) {
-    if ($stmt->execute()) {
         // Log Activity with new ActivityLogger
         try {
             // Get assignee name

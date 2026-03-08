@@ -12,7 +12,7 @@ $db = $database->getConnection();
 $user = new User($db);
 
 try {
-    // Get all active members
+    // Get all active members (only role = member)
     $query = "SELECT id, full_name, email, role, designation, created_at 
               FROM users 
               WHERE role = 'member'

@@ -31,7 +31,8 @@ import {
   ShieldCheck,
   AlertTriangle,
   X,
-  ChevronDown
+  ChevronDown,
+  Sparkles
 } from 'lucide-react';
 
 const TaskDetails = () => {
@@ -41,6 +42,10 @@ const TaskDetails = () => {
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [complexity, setComplexity] = useState(null);
+  const [isFocusMode, setIsFocusMode] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
 
   // Status update states
   const [selectedStatus, setSelectedStatus] = useState('');
@@ -56,6 +61,20 @@ const TaskDetails = () => {
   useEffect(() => {
     loadTask();
   }, [id]);
+
+  // Timer logic
+  useEffect(() => {
+    let interval;
+    if (isTimerRunning && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft(prev => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0 && isTimerRunning) {
+      setIsTimerRunning(false);
+      addToast("Focus session complete!", "info");
+    }
+    return () => clearInterval(interval);
+  }, [isTimerRunning, timeLeft]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -74,9 +93,15 @@ const TaskDetails = () => {
     setError('');
     try {
       const data = await memberService.getTaskDetails(id);
-      console.log('Loaded task:', data);
       setTask(data);
       setSelectedStatus(data.status);
+
+      // Get AI Complexity
+      const aiData = await memberService.getTaskComplexity(id, data.title, data.description);
+      if (aiData) {
+        setComplexity(aiData);
+        setTimeLeft(aiData.suggested_focus_mins * 60);
+      }
     } catch (error) {
       console.error('Failed to load task:', error);
       let errorMessage = 'Failed to load task. ';
@@ -222,354 +247,437 @@ const TaskDetails = () => {
         </div>
       </div>
 
-      {/* Main Task Information Card */}
-      <div className="card" style={{ marginBottom: '1.5rem' }}>
-        <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-          <div style={{ flex: 1 }}>
-            <h2 className="card-title" style={{ marginBottom: '0.5rem', color: 'var(--text-main)' }}>{task.title}</h2>
-            <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Task ID: #{task.id}</p>
-          </div>
-          <StatusBadge status={task.status} />
-        </div>
-
-        {/* Task Description */}
-        <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-light)' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.75rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <FileText size={18} /> Description
-          </h3>
-          <p style={{ margin: 0, lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-            {task.description || 'No description provided.'}
-          </p>
-        </div>
-
-        {/* Task Metadata Grid */}
-        <div style={{
-          padding: '1.5rem',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-          gap: '1.5rem'
-        }}>
-          <div>
-            <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Folder size={14} /> Project
-            </div>
-            <div style={{ fontWeight: '500', color: 'var(--text-main)' }}>
-              {task.project_name || '-'}
-            </div>
-          </div>
-
-          <div>
-            <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <User size={14} /> Assigned By
-            </div>
-            <div style={{ fontWeight: '500', color: 'var(--text-main)' }}>
-              {task.assigned_by_name || '-'}
-            </div>
-          </div>
-
-          <div>
-            <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Target size={14} /> Priority
-            </div>
-            <div>
-              <span style={{
-                display: 'inline-block',
-                padding: '0.25rem 0.75rem',
-                borderRadius: '12px',
-                fontSize: '0.875rem',
-                fontWeight: '600',
-                backgroundColor: getPriorityColor(task.priority) + '25',
-                color: getPriorityColor(task.priority),
-                textTransform: 'capitalize'
-              }}>
-                {task.priority}
+      {/* AI Intelligence & Focus Section */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
+        {complexity && (
+          <div className="card" style={{
+            background: 'linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-body) 100%)',
+            border: '1px solid var(--primary)',
+            padding: '1.5rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1rem'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <ShieldCheck size={18} /> AI Cognitive Assessment
+              </h3>
+              <span className={`badge ${complexity.score > 7 ? 'bg-soft-danger text-danger' : 'bg-soft-info text-info'}`}>
+                {complexity.label} Complexity
               </span>
             </div>
-          </div>
-
-          <div>
-            <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Calendar size={14} /> Due Date
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+              <span style={{ fontSize: '2rem', fontWeight: '800' }}>{complexity.score}</span>
+              <span style={{ color: 'var(--text-muted)' }}>/ 10 Load Factor</span>
             </div>
-            <div style={{ fontWeight: '500', color: 'var(--text-main)' }}>
-              {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No due date'}
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+              {complexity.reasons.map((r, i) => <div key={i}>• {r}</div>)}
             </div>
           </div>
+        )}
 
-          <div>
-            <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Clock size={14} /> Created
-            </div>
-            <div style={{ fontWeight: '500', color: 'var(--text-main)' }}>
-              {new Date(task.created_at).toLocaleDateString()}
-            </div>
+        <div className="card" style={{
+          background: isFocusMode ? 'var(--dark-primary)' : 'var(--bg-surface)',
+          border: isFocusMode ? '2px solid var(--primary)' : '1px solid var(--border-light)',
+          padding: '1.5rem',
+          color: isFocusMode ? '#fff' : 'inherit',
+          transition: 'all 0.3s ease'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h3 style={{ margin: 0, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Clock size={18} /> Deep Work Focus
+            </h3>
+            {isFocusMode && <span className="pulse-dot"></span>}
           </div>
-
-          <div>
-            <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <RefreshCw size={14} /> Last Updated
+          <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+            <div style={{ fontSize: '2.5rem', fontWeight: '800', fontFamily: 'monospace' }}>
+              {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
             </div>
-            <div style={{ fontWeight: '500', color: 'var(--text-main)' }}>
-              {new Date(task.updated_at).toLocaleDateString()}
-            </div>
+            <p style={{ opacity: 0.7, fontSize: '0.8rem', margin: '0.5rem 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+              <Sparkles size={14} /> AI Recommended Focus Session
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <button
+              className={`btn ${isTimerRunning ? 'btn-danger' : 'btn-primary'}`}
+              style={{ flex: 1 }}
+              onClick={() => {
+                setIsTimerRunning(!isTimerRunning);
+                if (!isFocusMode) setIsFocusMode(true);
+              }}
+            >
+              {isTimerRunning ? 'Pause' : 'Start Focus'}
+            </button>
+            {isFocusMode && (
+              <button
+                className="btn btn-secondary"
+                onClick={() => {
+                  setIsFocusMode(false);
+                  setIsTimerRunning(false);
+                }}
+              >
+                Exit Focus
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Update Task Status Card */}
-      <div className="card">
-        <div className="card-header">
-          <h3 className="card-title" style={{ fontSize: '1.25rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Edit3 size={20} /> Update Task Progress
-          </h3>
+      <div style={{
+        filter: isFocusMode ? 'blur(0px)' : 'none',
+        opacity: isFocusMode ? 0.3 : 1,
+        pointerEvents: isFocusMode ? 'none' : 'auto',
+        transition: 'all 0.5s ease',
+        transform: isFocusMode ? 'scale(0.98)' : 'scale(1)'
+      }}>
+        <div className="card" style={{ marginBottom: '1.5rem' }}>
+          <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+            <div style={{ flex: 1 }}>
+              <h2 className="card-title" style={{ marginBottom: '0.5rem', color: 'var(--text-main)' }}>{task.title}</h2>
+              <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Task ID: #{task.id}</p>
+            </div>
+            <StatusBadge status={task.status} />
+          </div>
+
+          {/* Task Description */}
+          <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-light)' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.75rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <FileText size={18} /> Description
+            </h3>
+            <p style={{ margin: 0, lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+              {task.description || 'No description provided.'}
+            </p>
+          </div>
+
+          {/* Task Metadata Grid */}
+          <div style={{
+            padding: '1.5rem',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '1.5rem'
+          }}>
+            <div>
+              <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Folder size={14} /> Project
+              </div>
+              <div style={{ fontWeight: '500', color: 'var(--text-main)' }}>
+                {task.project_name || '-'}
+              </div>
+            </div>
+
+            <div>
+              <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <User size={14} /> Assigned By
+              </div>
+              <div style={{ fontWeight: '500', color: 'var(--text-main)' }}>
+                {task.assigned_by_name || '-'}
+              </div>
+            </div>
+
+            <div>
+              <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Target size={14} /> Priority
+              </div>
+              <div>
+                <span style={{
+                  display: 'inline-block',
+                  padding: '0.25rem 0.75rem',
+                  borderRadius: '12px',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  backgroundColor: getPriorityColor(task.priority) + '25',
+                  color: getPriorityColor(task.priority),
+                  textTransform: 'capitalize'
+                }}>
+                  {task.priority}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Calendar size={14} /> Due Date
+              </div>
+              <div style={{ fontWeight: '500', color: 'var(--text-main)' }}>
+                {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No due date'}
+              </div>
+            </div>
+
+            <div>
+              <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Clock size={14} /> Created
+              </div>
+              <div style={{ fontWeight: '500', color: 'var(--text-main)' }}>
+                {new Date(task.created_at).toLocaleDateString()}
+              </div>
+            </div>
+
+            <div>
+              <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <RefreshCw size={14} /> Last Updated
+              </div>
+              <div style={{ fontWeight: '500', color: 'var(--text-main)' }}>
+                {new Date(task.updated_at).toLocaleDateString()}
+              </div>
+            </div>
+          </div>
         </div>
 
-        <form onSubmit={handleStatusUpdate} style={{ padding: '1.5rem' }}>
-          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-            <label className="form-label">
-              Status *
-            </label>
-            <div style={{ position: 'relative', maxWidth: '400px' }} ref={dropdownRef}>
-              <div
-                onClick={() => !updating && setIsDropdownOpen(!isDropdownOpen)}
-                style={{
-                  width: '100%',
-                  padding: '0.875rem 1rem',
-                  border: '2px solid var(--border-light)',
-                  borderRadius: 'var(--radius-md)',
-                  background: 'var(--bg-body)',
-                  color: 'var(--text-main)',
-                  cursor: updating ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  opacity: updating ? 0.7 : 1
-                }}
-              >
-                {(() => {
-                  const selected = getSelectedOption();
-                  const Icon = selected.icon;
-                  return (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <Icon size={18} color={selected.color} />
-                      <span>{selected.label}</span>
-                    </div>
-                  );
-                })()}
-                <ChevronDown size={16} color="var(--text-muted)" />
-              </div>
+        {/* Update Task Status Card */}
+        <div className="card">
+          <div className="card-header">
+            <h3 className="card-title" style={{ fontSize: '1.25rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Edit3 size={20} /> Update Task Progress
+            </h3>
+          </div>
 
-              {isDropdownOpen && (
-                <div style={{
-                  position: 'absolute',
-                  top: '100%',
-                  left: 0,
-                  right: 0,
-                  marginTop: '0.5rem',
-                  background: 'var(--bg-surface)',
-                  border: '1px solid var(--border-light)',
-                  borderRadius: 'var(--radius-md)',
-                  boxShadow: 'var(--shadow-lg)',
-                  zIndex: 10,
-                  overflow: 'hidden'
-                }}>
-                  {statusOptions.map((option) => {
-                    const Icon = option.icon;
+          <form onSubmit={handleStatusUpdate} style={{ padding: '1.5rem' }}>
+            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+              <label className="form-label">
+                Status *
+              </label>
+              <div style={{ position: 'relative', maxWidth: '400px' }} ref={dropdownRef}>
+                <div
+                  onClick={() => !updating && setIsDropdownOpen(!isDropdownOpen)}
+                  style={{
+                    width: '100%',
+                    padding: '0.875rem 1rem',
+                    border: '2px solid var(--border-light)',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'var(--bg-body)',
+                    color: 'var(--text-main)',
+                    cursor: updating ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    opacity: updating ? 0.7 : 1
+                  }}
+                >
+                  {(() => {
+                    const selected = getSelectedOption();
+                    const Icon = selected.icon;
                     return (
-                      <div
-                        key={option.value}
-                        onClick={() => {
-                          setSelectedStatus(option.value);
-                          setIsDropdownOpen(false);
-                        }}
-                        style={{
-                          padding: '0.75rem 1rem',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px',
-                          background: selectedStatus === option.value ? 'var(--bg-body)' : 'transparent',
-                          transition: 'background 0.2s'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-body)'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = selectedStatus === option.value ? 'var(--bg-body)' : 'transparent'}
-                      >
-                        <Icon size={18} color={option.color} />
-                        <span>{option.label}</span>
-                        {selectedStatus === option.value && <CheckCircle2 size={16} color="var(--primary)" style={{ marginLeft: 'auto' }} />}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <Icon size={18} color={selected.color} />
+                        <span>{selected.label}</span>
                       </div>
                     );
-                  })}
+                  })()}
+                  <ChevronDown size={16} color="var(--text-muted)" />
+                </div>
+
+                {isDropdownOpen && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    marginTop: '0.5rem',
+                    background: 'var(--bg-surface)',
+                    border: '1px solid var(--border-light)',
+                    borderRadius: 'var(--radius-md)',
+                    boxShadow: 'var(--shadow-lg)',
+                    zIndex: 10,
+                    overflow: 'hidden'
+                  }}>
+                    {statusOptions.map((option) => {
+                      const Icon = option.icon;
+                      return (
+                        <div
+                          key={option.value}
+                          onClick={() => {
+                            setSelectedStatus(option.value);
+                            setIsDropdownOpen(false);
+                          }}
+                          style={{
+                            padding: '0.75rem 1rem',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            background: selectedStatus === option.value ? 'var(--bg-body)' : 'transparent',
+                            transition: 'background 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-body)'}
+                          onMouseLeave={(e) => e.currentTarget.style.background = selectedStatus === option.value ? 'var(--bg-body)' : 'transparent'}
+                        >
+                          <Icon size={18} color={option.color} />
+                          <span>{option.label}</span>
+                          {selectedStatus === option.value && <CheckCircle2 size={16} color="var(--primary)" style={{ marginLeft: 'auto' }} />}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+              <label className="form-label">
+                Progress Notes (Optional)
+              </label>
+              <textarea
+                className="form-control"
+                value={progressNote}
+                onChange={(e) => setProgressNote(e.target.value)}
+                disabled={updating}
+                rows="4"
+                placeholder="Add notes..."
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+              <label className="form-label">
+                Attachments (Optional)
+              </label>
+              <input
+                type="file"
+                className="form-control"
+                onChange={handleFileChange}
+                disabled={updating}
+                multiple
+                style={{ padding: '0.75rem' }}
+              />
+              {attachments.length > 0 && (
+                <div style={{ marginTop: '0.75rem', color: 'var(--text-main)' }}>
+                  <strong>Selected files:</strong>
+                  <ul style={{ marginTop: '0.5rem', marginBottom: 0, paddingLeft: '1.5rem' }}>
+                    {attachments.map((file, index) => (
+                      <li key={index} style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <Paperclip size={14} /> {file.name} ({(file.size / 1024).toFixed(2)} KB)
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </div>
-          </div>
 
-          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-            <label className="form-label">
-              Progress Notes (Optional)
-            </label>
-            <textarea
-              className="form-control"
-              value={progressNote}
-              onChange={(e) => setProgressNote(e.target.value)}
-              disabled={updating}
-              rows="4"
-              placeholder="Add notes..."
-            />
-          </div>
+            <div style={{
+              display: 'flex', gap: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-light)'
+            }}>
+              <button type="submit" className="btn btn-primary" disabled={updating}>
+                {updating ? 'Updating...' : <><Save size={18} /> Save Update</>}
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => {
+                  setSelectedStatus(task.status);
+                  setProgressNote('');
+                  setAttachments([]);
+                }}
+                disabled={updating}
+              >
+                <RotateCcw size={18} /> Reset
+              </button>
+            </div>
+          </form>
+        </div>
 
-          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-            <label className="form-label">
-              Attachments (Optional)
-            </label>
-            <input
-              type="file"
-              className="form-control"
-              onChange={handleFileChange}
-              disabled={updating}
-              multiple
-              style={{ padding: '0.75rem' }}
-            />
-            {attachments.length > 0 && (
-              <div style={{ marginTop: '0.75rem', color: 'var(--text-main)' }}>
-                <strong>Selected files:</strong>
-                <ul style={{ marginTop: '0.5rem', marginBottom: 0, paddingLeft: '1.5rem' }}>
-                  {attachments.map((file, index) => (
-                    <li key={index} style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      <Paperclip size={14} /> {file.name} ({(file.size / 1024).toFixed(2)} KB)
-                    </li>
-                  ))}
-                </ul>
+        {/* Task History Section */}
+        {activities.length > 0 && (
+          <div className="card" style={{ marginTop: '1.5rem' }}>
+            <div className="card-header">
+              <h3 className="card-title" style={{ fontSize: '1.25rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <History size={20} /> Task History & Activity
+              </h3>
+            </div>
+            <div style={{ padding: '1.5rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                {activities.map((group, index) => (
+                  <div key={index} style={{ borderLeft: '2px solid var(--border-light)', paddingLeft: '1.5rem', position: 'relative' }}>
+                    {/* Timeline Dot */}
+                    <div style={{
+                      position: 'absolute',
+                      left: '-7px',
+                      top: '0',
+                      width: '12px',
+                      height: '12px',
+                      borderRadius: '50%',
+                      backgroundColor: 'var(--primary)',
+                      border: '2px solid var(--bg-surface)'
+                    }}></div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                      <span style={{ fontWeight: '700', color: 'var(--text-main)' }}>{group.user_name}</span>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        {new Date(group.created_at).toLocaleString()}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      {group.items.map((item, i) => (
+                        <div key={i}>
+                          {item.itemType === 'note' ? (
+                            <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.95rem', whiteSpace: 'pre-wrap', backgroundColor: 'var(--bg-body)', padding: '1rem', borderRadius: '8px' }}>
+                              {item.note}
+                            </p>
+                          ) : (
+                            <a
+                              href={`http://localhost/Task-management/backend${item.file_path}`}
+                              onClick={(e) => handleAttachmentClick(e, item)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="activity-attachment"
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '1rem',
+                                padding: '0.75rem 1rem',
+                                border: '1px solid var(--border-light)',
+                                borderRadius: '8px',
+                                textDecoration: 'none',
+                                backgroundColor: 'var(--bg-card)',
+                                transition: 'all 0.2s ease',
+                                width: 'fit-content',
+                                maxWidth: '100%'
+                              }}
+                            >
+                              {item.file_name.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                                <ImageIcon size={20} color="var(--primary)" />
+                              ) : (
+                                <FileText size={20} color="var(--text-muted)" />
+                              )}
+                              <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {item.file_name}
+                              </span>
+                              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                ({(item.file_size / 1024).toFixed(1)} KB)
+                              </span>
+                            </a>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
-          </div>
-
-          <div style={{
-            display: 'flex', gap: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-light)'
-          }}>
-            <button type="submit" className="btn btn-primary" disabled={updating}>
-              {updating ? 'Updating...' : <><Save size={18} /> Save Update</>}
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => {
-                setSelectedStatus(task.status);
-                setProgressNote('');
-                setAttachments([]);
-              }}
-              disabled={updating}
-            >
-              <RotateCcw size={18} /> Reset
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {/* Task History Section */}
-      {activities.length > 0 && (
-        <div className="card" style={{ marginTop: '1.5rem' }}>
-          <div className="card-header">
-            <h3 className="card-title" style={{ fontSize: '1.25rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <History size={20} /> Task History & Activity
-            </h3>
-          </div>
-          <div style={{ padding: '1.5rem' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              {activities.map((group, index) => (
-                <div key={index} style={{ borderLeft: '2px solid var(--border-light)', paddingLeft: '1.5rem', position: 'relative' }}>
-                  {/* Timeline Dot */}
-                  <div style={{
-                    position: 'absolute',
-                    left: '-7px',
-                    top: '0',
-                    width: '12px',
-                    height: '12px',
-                    borderRadius: '50%',
-                    backgroundColor: 'var(--primary)',
-                    border: '2px solid var(--bg-surface)'
-                  }}></div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                    <span style={{ fontWeight: '700', color: 'var(--text-main)' }}>{group.user_name}</span>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                      {new Date(group.created_at).toLocaleString()}
-                    </span>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {group.items.map((item, i) => (
-                      <div key={i}>
-                        {item.itemType === 'note' ? (
-                          <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.95rem', whiteSpace: 'pre-wrap', backgroundColor: 'var(--bg-body)', padding: '1rem', borderRadius: '8px' }}>
-                            {item.note}
-                          </p>
-                        ) : (
-                          <a
-                            href={`http://localhost/Task-management/backend${item.file_path}`}
-                            onClick={(e) => handleAttachmentClick(e, item)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="activity-attachment"
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '1rem',
-                              padding: '0.75rem 1rem',
-                              border: '1px solid var(--border-light)',
-                              borderRadius: '8px',
-                              textDecoration: 'none',
-                              backgroundColor: 'var(--bg-card)',
-                              transition: 'all 0.2s ease',
-                              width: 'fit-content',
-                              maxWidth: '100%'
-                            }}
-                          >
-                            {item.file_name.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-                              <ImageIcon size={20} color="var(--primary)" />
-                            ) : (
-                              <FileText size={20} color="var(--text-muted)" />
-                            )}
-                            <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {item.file_name}
-                            </span>
-                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                              ({(item.file_size / 1024).toFixed(1)} KB)
-                            </span>
-                          </a>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Image Preview Modal */}
-      {previewImage && (
-        <Modal
-          isOpen={!!previewImage}
-          onClose={() => setPreviewImage(null)}
-          title="Image Preview"
-        >
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <img
-              src={previewImage}
-              alt="Attachment Preview"
-              style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain' }}
-            />
-          </div>
-          <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-            <a href={previewImage} download target="_blank" rel="noreferrer" className="btn btn-primary">
-              <Download size={18} /> Download Image
-            </a>
-          </div>
-        </Modal>
-      )}
+        {/* Image Preview Modal */}
+        {previewImage && (
+          <Modal
+            isOpen={!!previewImage}
+            onClose={() => setPreviewImage(null)}
+            title="Image Preview"
+          >
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <img
+                src={previewImage}
+                alt="Attachment Preview"
+                style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain' }}
+              />
+            </div>
+            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+              <a href={previewImage} download target="_blank" rel="noreferrer" className="btn btn-primary">
+                <Download size={18} /> Download Image
+              </a>
+            </div>
+          </Modal>
+        )}
+      </div>
     </div>
   );
 };

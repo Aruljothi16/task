@@ -2,10 +2,10 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { Moon, Sun, Palette, LogOut } from 'lucide-react';
+import { Moon, Sun, Palette, LogOut, Menu } from 'lucide-react';
 import NotificationBell from './NotificationBell';
 
-const Navbar = () => {
+const Navbar = ({ toggleSidebar, isCollapsed }) => {
   const { user, logout } = useAuth();
   const { theme, toggleMode, changeColor } = useTheme();
   const navigate = useNavigate();
@@ -17,8 +17,26 @@ const Navbar = () => {
 
   return (
     <nav className="navbar">
-      <div className="navbar-brand">
-        <h2>Task Management System</h2>
+      <div className="navbar-brand" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        {toggleSidebar && (
+          <button
+            onClick={toggleSidebar}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--text-main)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '4px'
+            }}
+            title={isCollapsed ? "Maximize Sidebar" : "Minimize Sidebar"}
+          >
+            <Menu size={24} />
+          </button>
+        )}
+        <h2 style={{ margin: 0 }}>Task Management System</h2>
       </div>
       <div className="navbar-menu" style={{ gap: '1rem', display: 'flex', alignItems: 'center' }}>
         <div className="theme-controls" style={{ display: 'flex', gap: '0.5rem' }}>

@@ -44,5 +44,10 @@ export const memberService = {
     });
     return response.data;
   },
+
+  getTaskComplexity: async (taskId, title, description) => {
+    const response = await api.post('/api/ai/get-complexity.php', { task_id: taskId, title, description });
+    return response.data;
+  }
 };
 

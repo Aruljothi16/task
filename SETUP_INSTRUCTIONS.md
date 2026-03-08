@@ -91,12 +91,32 @@ const API_BASE_URL = 'http://localhost/Task-management/backend';
 - **Manager**: manager1@tms.com / admin123  
 - **Member**: member1@tms.com / admin123
 
-## Next Steps
+## Step 7: AI Integration Setup (Optional)
 
-1. Start React app: `cd tms-frontend && npm start`
-2. Open: http://localhost:3000
-3. Login with admin credentials
-4. Should redirect to `/admin` dashboard
+The AI service provides smart priority suggestions and workload analysis.
+
+1. **Install Python Dependencies**:
+   ```bash
+   cd python-ai
+   pip install -r requirements.txt
+   ```
+
+2. **Start the AI Server**:
+   ```bash
+   cd python-ai
+   py main.py
+   ```
+   *Note: Keep this terminal window open!*
+
+3. **Verify AI Service**:
+   Open: http://127.0.0.1:8000/docs
+   You should see the FastAPI swagger documentation.
+
+4. **Using AI Features**:
+   - Log in as a **Manager**.
+   - Go to **Tasks** and click **"Create Task"**.
+   - Type a task title (e.g., "Urgent server fix") to see priority suggestions.
+   - Select a project to see workload-based member recommendations.
 
 
 

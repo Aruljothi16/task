@@ -45,6 +45,16 @@ export const managerService = {
     return response.data;
   },
 
+  importProjects: async (projects) => {
+    const response = await api.post('/api/projects/import.php', { projects });
+    return response.data;
+  },
+
+  importTasks: async (tasks) => {
+    const response = await api.post('/api/tasks/import.php', { tasks });
+    return response.data;
+  },
+
   getDashboardSummary: async () => {
     const response = await api.get('/api/dashboard/summary.php');
     return response.data.summary;
@@ -59,6 +69,39 @@ export const managerService = {
       console.error('Error fetching team members:', error);
       throw error;
     }
+  },
+
+  // AI/ML Methods
+  predictPriority: async (title, description = '', extra = {}) => {
+    const response = await api.post('/api/ai/suggest-priority.php', { title, description, ...extra });
+    return response.data;
+  },
+
+  analyzeWorkload: async (projectId) => {
+    const response = await api.post('/api/ai/analyze-workload.php', { project_id: projectId });
+    return response.data;
+  },
+
+  chat: async (message) => {
+    const response = await api.post('/api/ai/chat.php', { message });
+    return response.data;
+  },
+
+
+  generateSubtasks: async (title, description = '') => {
+    const response = await api.post('/api/ai/generate-subtasks.php', { title, description });
+    return response.data;
+  },
+
+
+  getRisk: async (userId, complexity = 'medium') => {
+    const response = await api.post('/api/ai/get-risk.php', { user_id: userId, complexity });
+    return response.data;
+  },
+
+  getTeamMood: async () => {
+    const response = await api.get('/api/ai/get-team-mood.php');
+    return response.data;
   },
 };
 

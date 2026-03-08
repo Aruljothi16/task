@@ -256,11 +256,11 @@ const MemberDashboard = () => {
           }}>
             {/* Recent Tasks Card */}
             <div style={{
-              background: "#fff",
+              background: "var(--bg-surface)",
               borderRadius: "16px",
               padding: "25px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
-              border: "1px solid #f1f5f9",
+              boxShadow: "var(--shadow-sm)",
+              border: "1px solid var(--border-light)",
               minHeight: "300px",
               display: "flex",
               flexDirection: "column"
@@ -271,14 +271,14 @@ const MemberDashboard = () => {
                 alignItems: 'center',
                 marginBottom: '20px'
               }}>
-                <h3 style={{ fontSize: "18px", fontWeight: "600", color: "#1e293b", margin: 0 }}>
+                <h3 style={{ fontSize: "18px", fontWeight: "600", color: "var(--text-main)", margin: 0 }}>
                   Recent Tasks
                 </h3>
               </div>
 
               {recentTasks.length === 0 ? (
                 <div style={{
-                  color: "#64748b",
+                  color: "var(--text-secondary)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -293,16 +293,16 @@ const MemberDashboard = () => {
                   {recentTasks.map((task) => (
                     <div key={task.id} style={{
                       padding: '12px',
-                      background: '#f8fafc',
+                      background: 'var(--bg-body)',
                       borderRadius: '10px',
-                      border: '1px solid #f1f5f9',
+                      border: '1px solid var(--border-light)',
                       transition: 'all 0.3s'
                     }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
-                      onMouseLeave={(e) => e.currentTarget.style.background = '#f8fafc'}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-surface)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'var(--bg-body)'}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
-                        <div style={{ fontSize: '14px', fontWeight: '500', color: '#1e293b' }}>
+                        <div style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-main)' }}>
                           {task.title || task.name}
                         </div>
                         <div style={{
@@ -315,7 +315,7 @@ const MemberDashboard = () => {
                           {task.status?.replace('_', ' ') || 'Pending'}
                         </div>
                       </div>
-                      <div style={{ fontSize: '12px', color: '#64748b' }}>
+                      <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
                         Due: {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No date'}
                       </div>
                     </div>
@@ -326,16 +326,16 @@ const MemberDashboard = () => {
 
             {/* Task Status Distribution */}
             <div style={{
-              background: "#fff",
+              background: "var(--bg-surface)",
               borderRadius: "16px",
               padding: "25px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
-              border: "1px solid #f1f5f9",
+              boxShadow: "var(--shadow-sm)",
+              border: "1px solid var(--border-light)",
               minHeight: "300px",
               display: "flex",
               flexDirection: "column"
             }}>
-              <h3 style={{ fontSize: "18px", fontWeight: "600", color: "#1e293b", margin: "0 0 20px 0" }}>
+              <h3 style={{ fontSize: "18px", fontWeight: "600", color: "var(--text-main)", margin: "0 0 20px 0" }}>
                 Task Progress
               </h3>
 
@@ -349,11 +349,11 @@ const MemberDashboard = () => {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: taskStatusData.colors[index] }} />
-                          <span style={{ fontSize: '14px', color: '#1e293b', fontWeight: '500' }}>{label}</span>
+                          <span style={{ fontSize: '14px', color: 'var(--text-main)', fontWeight: '500' }}>{label}</span>
                         </div>
-                        <span style={{ fontSize: '14px', color: '#64748b', fontWeight: '600' }}>{count} ({percentage}%)</span>
+                        <span style={{ fontSize: '14px', color: 'var(--text-secondary)', fontWeight: '600' }}>{count} ({percentage}%)</span>
                       </div>
-                      <div style={{ height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div style={{ height: '6px', background: 'var(--bg-body)', borderRadius: '3px', overflow: 'hidden' }}>
                         <div style={{ height: '100%', width: `${percentage}%`, background: taskStatusData.colors[index], borderRadius: '3px', transition: 'width 0.5s ease' }} />
                       </div>
                     </div>

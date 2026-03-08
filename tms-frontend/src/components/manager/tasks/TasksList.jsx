@@ -6,8 +6,10 @@ import StatusBadge from '../../shared/StatusBadge';
 import CreateTask from './CreateTask';
 import {
   Search, List, Calendar, User, Briefcase,
-  ChevronRight, Filter, Target, AlertCircle
+  ChevronRight, Filter, Target, AlertCircle, Download
 } from 'lucide-react';
+import ImportTasksModal from '../../shared/ImportTasksModal';
+import { useToast } from '../../../context/ToastContext';
 
 const TasksList = () => {
   const [tasks, setTasks] = useState([]);
@@ -16,6 +18,8 @@ const TasksList = () => {
   const [error, setError] = useState('');
   const [selectedProject, setSelectedProject] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showImportModal, setShowImportModal] = useState(false);
+  const { addToast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -68,7 +72,12 @@ const TasksList = () => {
           <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Global Tasks</h1>
           <p style={{ color: 'var(--text-secondary)' }}>Review and manage all task assignments across your projects.</p>
         </div>
-        <CreateTask onTaskCreated={handleTaskCreated} />
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button className="btn btn-secondary" onClick={() => setShowImportModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '8px' }}>
+            <Download size={18} /> <span>Import Excel</span>
+          </button>
+          <CreateTask onTaskCreated={handleTaskCreated} />
+        </div>
       </div>
 
       <div className="card" style={{ marginBottom: '2rem', padding: '1rem' }}>
@@ -182,6 +191,13 @@ const TasksList = () => {
           </div>
         )}
       </div>
+      {showImportModal && (
+        <ImportTasksModal
+          onClose={() => setShowImportModal(false)}
+          onRefresh={loadTasks}
+          showNotification={(msg, type) => addToast(msg, type)}
+        />
+      )}
     </div>
   );
 };

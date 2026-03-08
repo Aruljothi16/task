@@ -25,7 +25,19 @@ $routes = [
     'api/tasks/assign' => 'api/tasks/assign.php',
     'api/tasks/update-status' => 'api/tasks/update-status.php',
     'api/dashboard/summary' => 'api/dashboard/summary.php',
-    'api/test/connection' => 'api/test/connection.php'
+    'api/test/connection' => 'api/test/connection.php',
+    'api/ai/suggest-priority' => 'api/ai/suggest-priority.php',
+    'api/ai/analyze-workload' => 'api/ai/analyze-workload.php',
+    'api/ai/chat' => 'api/ai/chat.php',
+    'api/ai/generate-subtasks' => 'api/ai/generate-subtasks.php',
+    'api/ai/get-risk' => 'api/ai/get-risk.php',
+    'api/ai/get-team-mood' => 'api/ai/get-team-mood.php',
+    'api/ai/get-complexity' => 'api/ai/get-complexity.php',
+    'api/ai/get-inertia' => 'api/ai/get-inertia.php',
+    // Support calls with .php extension too
+    'api/ai/suggest-priority.php' => 'api/ai/suggest-priority.php',
+    'api/ai/analyze-workload.php' => 'api/ai/analyze-workload.php',
+    'api/ai/chat.php' => 'api/ai/chat.php'
 ];
 
 if (isset($routes[$path])) {

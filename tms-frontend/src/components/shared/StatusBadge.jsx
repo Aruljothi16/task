@@ -23,6 +23,14 @@ const StatusBadge = ({ status, type = 'task' }) => {
           return 'badge badge-completed';
         case 'cancelled':
           return 'badge badge-cancelled';
+        case 'testing':
+          return 'badge badge-testing';
+        case 'ready_for_testing':
+          return 'badge badge-ready-for-testing';
+        case 'verified':
+          return 'badge badge-verified';
+        case 'failed':
+          return 'badge badge-failed';
         default:
           return 'badge';
       }

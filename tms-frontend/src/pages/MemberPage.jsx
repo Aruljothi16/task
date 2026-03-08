@@ -8,13 +8,20 @@ import TaskDetails from '../components/member/tasks/TaskDetails';
 import Settings from '../components/member/settings/Settings';
 import MemberActivityLog from '../components/member/activity/MemberActivityLog';
 
+import ChatBot from '../components/shared/ChatBot';
+
 const MemberPage = () => {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
+
   return (
     <div className="app-container">
-      <Navbar />
+      <Navbar toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)} isCollapsed={isSidebarCollapsed} />
       <div className="main-content">
-        <MemberSidebar />
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <MemberSidebar
+          isCollapsed={isSidebarCollapsed}
+          toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
+        <div style={{ flex: 1, minWidth: 0, transition: 'all 0.3s ease' }}>
           <Routes>
             <Route path="/" element={<MemberDashboard />} />
             <Route path="/tasks" element={<MyTasks />} />
@@ -24,6 +31,7 @@ const MemberPage = () => {
           </Routes>
         </div>
       </div>
+      <ChatBot />
     </div>
   );
 };

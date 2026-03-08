@@ -21,10 +21,10 @@ const AssignTask = ({ task, onTaskAssigned }) => {
     try {
       // Use the new managerService.getTeamMembers()
       const members = await managerService.getTeamMembers();
-      
+
       // Debug log
       console.log('Loaded members:', members);
-      
+
       // Handle different response structures
       let memberList = [];
       if (Array.isArray(members)) {
@@ -34,13 +34,13 @@ const AssignTask = ({ task, onTaskAssigned }) => {
       } else if (members && members.data) {
         memberList = members.data;
       }
-      
+
       setUsers(memberList);
-      
+
       if (memberList.length === 0) {
         setError('No team members found. Please add members first.');
       }
-      
+
     } catch (err) {
       console.error('Failed to load team members:', err);
       setError('Failed to load team members. Please try again.');
@@ -55,7 +55,7 @@ const AssignTask = ({ task, onTaskAssigned }) => {
       alert('Please select a team member to assign');
       return;
     }
-    
+
     try {
       await managerService.assignTask(task.id, assignedTo);
       setShowModal(false);
@@ -94,10 +94,10 @@ const AssignTask = ({ task, onTaskAssigned }) => {
               disabled
             />
           </div>
-          
+
           <div className="form-group">
             <label className="form-label">Assign To</label>
-            
+
             {loading ? (
               <div className="text-center p-3">
                 <span className="spinner-border spinner-border-sm me-2"></span>
@@ -116,22 +116,28 @@ const AssignTask = ({ task, onTaskAssigned }) => {
                   required
                 >
                   <option value="">Select Team Member</option>
-                  {users.map((user) => (
-                    <option key={user.id} value={user.id}>
-                      {user.full_name} ({user.email})
-                    </option>
-                  ))}
+                  {users
+                    .filter(u =>
+                      u?.role === 'member' &&
+                      u?.designation?.toLowerCase() !== 'tester' &&
+                      u?.designation?.toLowerCase() !== 'manager'
+                    )
+                    .map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.full_name} ({user.email})
+                      </option>
+                    ))}
                 </select>
                 <small className="form-text text-muted">
-                  {users.length} team member(s) available
+                  {users.filter(u => u?.role === 'member' && u?.designation?.toLowerCase() !== 'tester' && u?.designation?.toLowerCase() !== 'manager').length} team member(s) available
                 </small>
               </>
             )}
           </div>
-          
+
           <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="btn btn-primary"
               disabled={!assignedTo || loading}
             >

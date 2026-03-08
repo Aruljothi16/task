@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { adminService } from '../../../services/adminService';
 import {
-  UserPlus, Edit, Trash2, Search, RefreshCw,
+  UserPlus, Edit, Trash2, Search,
   User, Mail, Shield, Check, X,
   ChevronLeft, ChevronRight, Download, Filter,
-  AlertCircle, Info, CheckCircle2
+  AlertCircle, Info, CheckCircle2,
+  Users, ShieldCheck, Briefcase, UserCheck, TrendingUp
 } from "lucide-react";
+import ImportUsersModal from "./ImportUsersModal";
 
 export default function UsersList() {
   const [users, setUsers] = useState([]);
@@ -15,6 +17,7 @@ export default function UsersList() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
@@ -345,6 +348,14 @@ export default function UsersList() {
     );
   };
 
+  // ── Role-based stats ───────────────────────────────────────────
+  const stats = {
+    total: users.length,
+    admins: users.filter(u => u.role === 'admin').length,
+    managers: users.filter(u => u.role === 'manager').length,
+    members: users.filter(u => u.role === 'member').length,
+  };
+
   return (
     <div style={styles.container}>
       <Notification notification={notification} />
@@ -353,15 +364,42 @@ export default function UsersList() {
       <div style={styles.header}>
         <div>
           <h1 style={styles.title}>User Management</h1>
-          <p style={styles.subtitle}>Manage system users and their permissions</p>
-          <div style={{ fontSize: '12px', color: '#64748b', marginTop: '5px' }}>
-            Total Users: {users.length} | Showing: {filteredUsers.length}
+          <p style={styles.subtitle}>Manage system users, roles, and permissions</p>
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '5px' }}>
+            {filteredUsers.length} of {users.length} users shown
           </div>
         </div>
         <div style={styles.headerActions}>
+          <button style={styles.exportButton} onClick={() => setShowImportModal(true)}>
+            <Download size={18} /> <span>Import Excel</span>
+          </button>
           <button style={styles.addButton} onClick={handleCreatePrepare}>
             <UserPlus size={18} /> <span>Add User</span>
           </button>
+        </div>
+      </div>
+
+      {/* ── Stats Cards ─────────────────────────────────────────── */}
+      <div style={styles.statsGrid}>
+        <div style={{ ...styles.statCard, background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' }}>
+          <Users size={26} style={{ opacity: 0.9, marginBottom: 12 }} />
+          <div style={styles.statNumber}>{stats.total}</div>
+          <div style={styles.statLabel}>Total Users</div>
+        </div>
+        <div style={{ ...styles.statCard, background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
+          <ShieldCheck size={26} style={{ opacity: 0.9, marginBottom: 12 }} />
+          <div style={styles.statNumber}>{stats.admins}</div>
+          <div style={styles.statLabel}>Admins</div>
+        </div>
+        <div style={{ ...styles.statCard, background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}>
+          <Briefcase size={26} style={{ opacity: 0.9, marginBottom: 12 }} />
+          <div style={styles.statNumber}>{stats.managers}</div>
+          <div style={styles.statLabel}>Managers</div>
+        </div>
+        <div style={{ ...styles.statCard, background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' }}>
+          <UserCheck size={26} style={{ opacity: 0.9, marginBottom: 12 }} />
+          <div style={styles.statNumber}>{stats.members}</div>
+          <div style={styles.statLabel}>Members</div>
         </div>
       </div>
 
@@ -548,6 +586,10 @@ export default function UsersList() {
                   >
                     <option value="Developer">Developer</option>
                     <option value="Tester">Tester</option>
+                    <option value="Designer">Designer</option>
+                    <option value="Frontend Developer">Frontend Developer</option>
+                    <option value="Backend Developer">Backend Developer</option>
+                    <option value="Business Analyst">Business Analyst</option>
 
                   </select>
                 </div>
@@ -578,10 +620,10 @@ export default function UsersList() {
               <div style={styles.modalBody}>
                 <div style={styles.successMessage}>
                   <CheckCircle2 size={48} style={{ color: '#10b981', marginBottom: 20 }} />
-                  <h3 style={{ margin: '0 0 12px 0', color: '#1e293b' }}>User Account Created</h3>
+                  <h3 style={{ margin: '0 0 12px 0', color: 'var(--text-main)' }}>User Account Created</h3>
                   <div style={styles.credentialsBox}>
-                    <div style={styles.credentialItem}><strong>Email:</strong> {passwordDetails.email}</div>
-                    <div style={styles.credentialItem}><strong>Password:</strong> <span style={styles.passwordDisplay}>{passwordDetails.password}</span></div>
+                    <div style={styles.credentialItem}><strong style={{ color: 'var(--text-main)' }}>Email:</strong> <span style={{ color: 'var(--text-main)' }}>{passwordDetails.email}</span></div>
+                    <div style={styles.credentialItem}><strong style={{ color: 'var(--text-main)' }}>Password:</strong> <span style={styles.passwordDisplay}>{passwordDetails.password}</span></div>
                   </div>
                 </div>
               </div>
@@ -673,8 +715,8 @@ export default function UsersList() {
               <div style={styles.modalBody}>
                 <div style={styles.warningMessage}>
                   <Trash2 size={32} style={{ color: '#ef4444', marginBottom: 16 }} />
-                  <h3 style={{ margin: '0 0 12px 0', color: '#1e293b' }}>Delete {selectedUser?.full_name}?</h3>
-                  <p>Are you sure? This cannot be undone.</p>
+                  <h3 style={{ margin: '0 0 12px 0', color: 'var(--text-main)' }}>Delete {selectedUser?.full_name}?</h3>
+                  <p style={{ color: 'var(--text-secondary)' }}>Are you sure? This cannot be undone.</p>
                 </div>
               </div>
               <div style={styles.modalFooter}>
@@ -685,6 +727,14 @@ export default function UsersList() {
           </div>
         )
       }
+
+      {showImportModal && (
+        <ImportUsersModal
+          onClose={() => setShowImportModal(false)}
+          onRefresh={fetchUsers}
+          showNotification={showNotification}
+        />
+      )}
       <style>{`@keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } } @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
     </div >
   );
@@ -692,28 +742,75 @@ export default function UsersList() {
 
 const styles = {
   container: { padding: '20px', minHeight: '100vh', boxSizing: 'border-box' },
-  header: { display: 'flex', justifyContent: 'space-between', marginBottom: '30px', flexWrap: 'wrap', gap: '20px', alignItems: 'center' },
+  header: { display: 'flex', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '20px', alignItems: 'center' },
   title: { fontSize: '28px', fontWeight: '800', margin: '0 0 8px 0', background: 'linear-gradient(135deg, var(--primary), var(--accent))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' },
   subtitle: { color: 'var(--text-secondary)', fontSize: '15px', margin: 0 },
   errorContainer: { padding: '15px', background: '#fee2e2', border: '1px solid #fecaca', borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   errorMessage: { color: '#dc2626', display: 'flex', alignItems: 'center' },
   retryButton: { padding: '8px 16px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' },
   headerActions: { display: 'flex', gap: '12px' },
-  exportButton: { display: 'flex', gap: '8px', padding: '10px 16px', background: 'white', border: '1px solid var(--border-light)', borderRadius: '10px', cursor: 'pointer', alignItems: 'center' },
+  statsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(4, 1fr)',
+    gap: '20px',
+    marginBottom: '28px',
+  },
+  statCard: {
+    borderRadius: '16px',
+    padding: '24px 20px',
+    color: 'white',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.14)',
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+    cursor: 'default',
+  },
+  statNumber: {
+    fontSize: '36px',
+    fontWeight: '800',
+    lineHeight: 1,
+    marginBottom: '6px',
+    letterSpacing: '-1px',
+  },
+  statLabel: {
+    fontSize: '13px',
+    fontWeight: '600',
+    opacity: 0.88,
+    textTransform: 'uppercase',
+    letterSpacing: '0.06em',
+  },
+  exportButton: { display: 'flex', gap: '8px', padding: '10px 16px', background: 'var(--bg-surface)', border: '1px solid var(--border-light)', borderRadius: '10px', cursor: 'pointer', alignItems: 'center', color: 'var(--text-main)', transition: 'all 0.3s ease' },
   refreshButton: { display: 'none' },
-  addButton: { display: 'flex', gap: '8px', padding: '10px 20px', background: 'var(--primary)', border: 'none', borderRadius: '8px', color: 'white', fontWeight: '600', cursor: 'pointer', alignItems: 'center', whiteSpace: 'nowrap' }, filtersContainer: { display: 'flex', gap: '15px', marginBottom: '24px', flexWrap: 'wrap', padding: '20px', background: 'white', borderRadius: '16px', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-light)' },
+  addButton: {
+    display: 'flex',
+    gap: '8px',
+    padding: '10px 24px',
+    background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))',
+    border: 'none',
+    borderRadius: '10px',
+    color: 'white',
+    fontWeight: '700',
+    cursor: 'pointer',
+    alignItems: 'center',
+    whiteSpace: 'nowrap',
+    boxShadow: '0 4px 12px rgba(var(--primary-rgb, 67, 97, 238), 0.3)',
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+    fontSize: '14px'
+  },
+  filtersContainer: { display: 'flex', gap: '15px', marginBottom: '24px', flexWrap: 'wrap', padding: '20px', background: 'var(--bg-surface)', borderRadius: '16px', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-light)' },
   searchBox: { flex: 1, position: 'relative', minWidth: '250px' },
-  searchIcon: { position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' },
-  searchInput: { width: '100%', padding: '12px 20px 12px 45px', borderRadius: '10px', border: '1px solid var(--border-light)', outline: 'none' },
+  searchIcon: { position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' },
+  searchInput: { width: '100%', padding: '12px 20px 12px 45px', borderRadius: '10px', border: '1px solid var(--border-light)', outline: 'none', background: 'var(--bg-body)', color: 'var(--text-main)' },
   filterGroup: { display: 'flex', gap: '8px', alignItems: 'center' },
-  filterSelect: { padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--border-light)', outline: 'none', background: 'white' },
-  resetButton: { padding: '10px 16px', background: 'var(--bg-body)', border: '1px solid var(--border-light)', borderRadius: '10px', cursor: 'pointer' },
-  tableContainer: { background: 'white', borderRadius: '16px', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-light)', overflowX: 'auto' },
-  loading: { padding: '100px', textAlign: 'center', color: 'var(--text-muted)' },
+  filterSelect: { padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--border-light)', outline: 'none', background: 'var(--bg-surface)', color: 'var(--text-main)' },
+  resetButton: { padding: '10px 16px', background: 'var(--bg-body)', border: '1px solid var(--border-light)', borderRadius: '10px', cursor: 'pointer', color: 'var(--text-main)' },
+  tableContainer: { background: 'var(--bg-surface)', borderRadius: '16px', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-light)', overflowX: 'auto' },
+  loading: { padding: '100px', textAlign: 'center', color: 'var(--text-secondary)' },
   spinner: { width: '40px', height: '40px', border: '3px solid var(--bg-body)', borderTop: '3px solid var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 20px' },
-  emptyState: { padding: '80px', textAlign: 'center', color: 'var(--text-muted)' },
+  emptyState: { padding: '80px', textAlign: 'center', color: 'var(--text-secondary)' },
   table: { width: '100%', borderCollapse: 'collapse' },
-  th: { padding: '16px', textAlign: 'left', borderBottom: '2px solid var(--bg-body)', color: 'var(--text-secondary)', background: 'var(--bg-surface)', cursor: 'pointer' },
+  th: { padding: '16px', textAlign: 'left', borderBottom: '2px solid var(--bg-body)', color: 'var(--text-secondary)', background: 'var(--bg-body)', cursor: 'pointer' },
   tr: { borderBottom: '1px solid var(--bg-body)' },
   td: { padding: '16px', verticalAlign: 'middle' },
   idBadge: { padding: '4px 8px', background: 'var(--bg-body)', borderRadius: '6px', fontSize: '12px' },
@@ -730,30 +827,30 @@ const styles = {
   actions: { display: 'flex', gap: '8px' },
   actionButton: { padding: '8px', background: 'var(--bg-body)', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex' },
   pagination: { display: 'flex', justifyContent: 'center', padding: '20px', gap: '8px' },
-  pageButton: { padding: '8px', background: 'transparent', border: '1px solid var(--border-light)', borderRadius: '8px', cursor: 'pointer' },
+  pageButton: { padding: '8px', background: 'transparent', border: '1px solid var(--border-light)', borderRadius: '8px', cursor: 'pointer', color: 'var(--text-main)' },
   pageInfo: { display: 'flex', alignItems: 'center', color: 'var(--text-secondary)' },
   modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { background: 'white', borderRadius: '16px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflow: 'auto', boxShadow: 'var(--shadow-lg)' },
+  modal: { background: 'var(--bg-surface)', borderRadius: '16px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflow: 'auto', boxShadow: 'var(--shadow-lg)' },
   modalHeader: { padding: '24px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  modalTitle: { margin: 0, fontSize: '20px', fontWeight: '600' },
-  modalClose: { background: 'transparent', border: 'none', cursor: 'pointer' },
+  modalTitle: { margin: 0, fontSize: '20px', fontWeight: '600', color: 'var(--text-main)' },
+  modalClose: { background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' },
   modalBody: { padding: '24px' },
   formGroup: { marginBottom: '20px' },
-  label: { display: 'block', marginBottom: '8px', fontWeight: '500' },
+  label: { display: 'block', marginBottom: '8px', fontWeight: '500', color: 'var(--text-main)' },
   required: { color: '#ef4444' },
   inputWithIcon: { position: 'relative', display: 'flex', alignItems: 'center' },
-  inputIcon: { position: 'absolute', left: '12px', color: 'var(--text-muted)' },
-  input: { width: '100%', padding: '12px 12px 12px 40px', borderRadius: '8px', border: '1px solid var(--border-light)', outline: 'none' },
-  select: { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-light)', outline: 'none', background: 'white' },
+  inputIcon: { position: 'absolute', left: '12px', color: 'var(--text-secondary)' },
+  input: { width: '100%', padding: '12px 12px 12px 40px', borderRadius: '8px', border: '1px solid var(--border-light)', outline: 'none', background: 'var(--bg-body)', color: 'var(--text-main)' },
+  select: { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-light)', outline: 'none', background: 'var(--bg-body)', color: 'var(--text-main)' },
   helpText: { marginTop: '8px', fontSize: '13px', color: 'var(--text-secondary)' },
   successMessage: { textAlign: 'center' },
   credentialsBox: { background: 'var(--bg-body)', padding: '20px', borderRadius: '12px', margin: '20px 0', textAlign: 'left' },
   credentialItem: { marginBottom: '12px' },
   passwordDisplay: { background: 'var(--text-main)', color: 'white', padding: '4px 8px', borderRadius: '4px', fontFamily: 'monospace' },
   modalFooter: { padding: '24px', borderTop: '1px solid var(--border-light)', display: 'flex', justifyContent: 'flex-end', gap: '12px' },
-  cancelButton: { padding: '10px 20px', background: 'var(--bg-body)', border: '1px solid var(--border-light)', borderRadius: '8px', cursor: 'pointer' },
-  saveButton: { padding: '10px 20px', background: 'var(--primary)', border: 'none', borderRadius: '8px', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center' },
-  addButtonSmall: { display: 'flex', gap: '8px', padding: '10px 16px', background: 'var(--primary)', border: 'none', borderRadius: '10px', color: 'white', cursor: 'pointer', margin: '16px auto' },
+  cancelButton: { padding: '10px 20px', background: 'var(--bg-body)', border: '1px solid var(--border-light)', borderRadius: '10px', cursor: 'pointer', color: 'var(--text-main)', fontWeight: '600', transition: 'all 0.2s ease' },
+  saveButton: { padding: '10px 24px', background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))', border: 'none', borderRadius: '10px', color: 'white', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', boxShadow: '0 4px 12px rgba(var(--primary-rgb, 67, 97, 238), 0.3)', transition: 'all 0.2s ease' },
+  addButtonSmall: { display: 'flex', gap: '8px', padding: '10px 20px', background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))', border: 'none', borderRadius: '10px', color: 'white', fontWeight: '600', cursor: 'pointer', margin: '16px auto', boxShadow: '0 4px 12px rgba(var(--primary-rgb, 67, 97, 238), 0.2)', transition: 'transform 0.2s ease' },
 };
 
 

@@ -9,13 +9,20 @@ import ManagerTaskDetails from '../components/manager/tasks/ManagerTaskDetails';
 import ManagerActivityLog from '../components/manager/activity/ManagerActivityLog';
 import Settings from '../components/manager/settings/Settings';
 
+import ChatBot from '../components/shared/ChatBot';
+
 const ManagerPage = () => {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
+
   return (
     <div className="app-container">
-      <Navbar />
+      <Navbar toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)} isCollapsed={isSidebarCollapsed} />
       <div className="main-content">
-        <ManagerSidebar />
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <ManagerSidebar
+          isCollapsed={isSidebarCollapsed}
+          toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
+        <div style={{ flex: 1, minWidth: 0, transition: 'all 0.3s ease' }}>
           <Routes>
             <Route path="/" element={<ManagerDashboard />} />
             <Route path="/projects" element={<MyProjects />} />
@@ -26,6 +33,7 @@ const ManagerPage = () => {
           </Routes>
         </div>
       </div>
+      <ChatBot />
     </div>
   );
 };

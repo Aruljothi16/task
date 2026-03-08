@@ -9,13 +9,20 @@ import TaskStatus from '../components/admin/tasks/TaskStatus';
 import ActivityLog from '../components/admin/activity/ActivityLog';
 import Settings from '../components/admin/settings/Settings';
 
+import ChatBot from '../components/shared/ChatBot';
+
 const AdminPage = () => {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
+
   return (
     <div className="app-container">
-      <Navbar />
+      <Navbar toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)} isCollapsed={isSidebarCollapsed} />
       <div className="main-content">
-        <AdminSidebar />
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <AdminSidebar
+          isCollapsed={isSidebarCollapsed}
+          toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
+        <div style={{ flex: 1, minWidth: 0, transition: 'all 0.3s ease' }}>
           <Routes>
             <Route path="/" element={<AdminDashboard />} />
             <Route path="/users" element={<UsersList />} />
@@ -26,6 +33,7 @@ const AdminPage = () => {
           </Routes>
         </div>
       </div>
+      <ChatBot />
     </div>
   );
 };

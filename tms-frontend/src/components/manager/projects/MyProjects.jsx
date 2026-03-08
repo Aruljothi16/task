@@ -8,8 +8,9 @@ import {
   Folder, Calendar, User, Clock, CheckCircle2, AlertCircle,
   ChevronLeft, ChevronRight, Filter,
   Activity, Grid, Plus, X, Check,
-  Info
+  Info, Download
 } from 'lucide-react';
+import ImportProjectsModal from "../../shared/ImportProjectsModal";
 
 export default function MyProjects() {
   const { user } = useAuth();
@@ -21,6 +22,7 @@ export default function MyProjects() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
@@ -361,6 +363,9 @@ export default function MyProjects() {
           </div>
         </div>
         <div style={styles.headerActions}>
+          <button style={styles.exportButton} onClick={() => setShowImportModal(true)}>
+            <Download size={18} /> <span>Import Excel</span>
+          </button>
           <button className="btn btn-primary" onClick={() => setShowCreateModal(true)} style={{ padding: '10px 20px' }}>
             <FolderPlus size={16} /> <span>Create Project</span>
           </button>
@@ -677,13 +682,13 @@ export default function MyProjects() {
 
                 <div style={styles.detailsGrid}>
                   <div style={styles.detailItem}>
-                    <strong>Project ID:</strong> #{selectedProject.id}
+                    <strong style={{ color: 'var(--text-main)' }}>Project ID:</strong> #{selectedProject.id}
                   </div>
                   <div style={styles.detailItem}>
-                    <strong>Manager:</strong> {selectedProject.manager_name || "Me"}
+                    <strong style={{ color: 'var(--text-main)' }}>Manager:</strong> {selectedProject.manager_name || "Me"}
                   </div>
                   <div style={styles.detailItem}>
-                    <strong>Status:</strong>
+                    <strong style={{ color: 'var(--text-main)' }}>Status:</strong>
                     <span style={{
                       color: getStatusColor(selectedProject.status),
                       fontWeight: '600',
@@ -693,7 +698,7 @@ export default function MyProjects() {
                     </span>
                   </div>
                   <div style={styles.detailItem}>
-                    <strong>Priority:</strong>
+                    <strong style={{ color: 'var(--text-main)' }}>Priority:</strong>
                     <span style={{
                       color: getPriorityColor(selectedProject.priority),
                       fontWeight: '600',
@@ -703,9 +708,9 @@ export default function MyProjects() {
                     </span>
                   </div>
                   <div style={styles.detailItem}>
-                    <strong>Due Date:</strong>
+                    <strong style={{ color: 'var(--text-main)' }}>Due Date:</strong>
                     <span style={{
-                      color: isOverdue(selectedProject.due_date) ? '#ef4444' : '#1e293b',
+                      color: isOverdue(selectedProject.due_date) ? '#ef4444' : 'var(--text-main)',
                       fontWeight: isOverdue(selectedProject.due_date) ? '600' : '400'
                     }}>
                       {formatDate(selectedProject.due_date)}
@@ -713,7 +718,7 @@ export default function MyProjects() {
                     </span>
                   </div>
                   <div style={styles.detailItem}>
-                    <strong>Created:</strong> {formatDate(selectedProject.created_at)}
+                    <strong style={{ color: 'var(--text-main)' }}>Created:</strong> {formatDate(selectedProject.created_at)}
                   </div>
                 </div>
               </div>
@@ -736,10 +741,10 @@ export default function MyProjects() {
             <div style={styles.modalBody}>
               <div style={styles.warningMessage}>
                 <Trash2 size={32} style={{ color: '#ef4444', marginBottom: 16 }} />
-                <h3 style={{ margin: '0 0 12px 0', color: '#1e293b' }}>
+                <h3 style={{ margin: '0 0 12px 0', color: 'var(--text-main)' }}>
                   Delete "{selectedProject?.name || selectedProject?.title}"?
                 </h3>
-                <p>Are you sure you want to delete this project? This cannot be undone.</p>
+                <p style={{ color: 'var(--text-secondary)' }}>Are you sure you want to delete this project? This cannot be undone.</p>
               </div>
             </div>
             <div style={styles.modalFooter}>
@@ -750,6 +755,14 @@ export default function MyProjects() {
             </div>
           </div>
         </div>
+      )}
+      {showImportModal && (
+        <ImportProjectsModal
+          onClose={() => setShowImportModal(false)}
+          onRefresh={fetchProjects}
+          showNotification={showNotification}
+          isAdmin={false}
+        />
       )}
       <style>{`@keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } } @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
     </div>
@@ -766,24 +779,25 @@ const styles = {
   statNumber: { fontSize: '32px', fontWeight: '700', marginBottom: '8px' },
   statLabel: { fontSize: '14px', opacity: 0.9 },
   headerActions: { display: 'flex', gap: '12px' },
+  exportButton: { display: 'flex', gap: '8px', padding: '10px 16px', background: 'white', border: '1px solid var(--border-light)', borderRadius: '10px', cursor: 'pointer', alignItems: 'center' },
   refreshButton: { display: 'none' },
 
   createButtonSmall: { display: 'flex', gap: '6px', padding: '6px 12px', background: 'var(--primary)', border: 'none', borderRadius: '6px', color: 'white', fontSize: '13px', cursor: 'pointer', margin: '16px auto' },
-  filtersContainer: { display: 'flex', gap: '15px', marginBottom: '30px', flexWrap: 'wrap', padding: '20px', background: 'white', borderRadius: '16px', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-light)' },
+  filtersContainer: { display: 'flex', gap: '15px', marginBottom: '30px', flexWrap: 'wrap', padding: '20px', background: 'var(--bg-surface)', borderRadius: '16px', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-light)' },
   searchBox: { flex: 1, position: 'relative', minWidth: '250px' },
-  searchIcon: { position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' },
-  searchInput: { width: '100%', padding: '12px 20px 12px 45px', borderRadius: '10px', border: '1px solid var(--border-light)', outline: 'none' },
+  searchIcon: { position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' },
+  searchInput: { width: '100%', padding: '12px 20px 12px 45px', borderRadius: '10px', border: '1px solid var(--border-light)', outline: 'none', background: 'var(--bg-body)', color: 'var(--text-main)' },
   filterGroup: { display: 'flex', gap: '8px' },
-  filterSelect: { padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--border-light)', outline: 'none', minWidth: '140px', background: 'white' },
-  resetButton: { padding: '10px 16px', background: 'var(--bg-body)', border: '1px solid var(--border-light)', borderRadius: '10px', cursor: 'pointer' },
+  filterSelect: { padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--border-light)', outline: 'none', minWidth: '140px', background: 'var(--bg-surface)', color: 'var(--text-main)' },
+  resetButton: { padding: '10px 16px', background: 'var(--bg-body)', border: '1px solid var(--border-light)', borderRadius: '10px', cursor: 'pointer', color: 'var(--text-main)' },
   projectsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px', marginBottom: '30px' },
-  projectCard: { background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', height: '100%' },
+  projectCard: { background: 'var(--bg-surface)', borderRadius: '16px', overflow: 'hidden', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', height: '100%' },
   cardHeader: { padding: '20px 20px 12px', borderBottom: '1px solid var(--bg-body)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' },
   projectTitleSection: { flex: 1 },
   statusBadge: { display: 'inline-flex', gap: '6px', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '500', textTransform: 'uppercase', marginBottom: '8px', alignItems: 'center' },
-  projectTitle: { fontSize: '16px', fontWeight: '600', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' },
+  projectTitle: { fontSize: '16px', fontWeight: '600', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', color: 'var(--text-main)' },
   cardActions: { display: 'flex', gap: '4px' },
-  actionButton: { padding: '6px', background: 'var(--bg-body)', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex' },
+  actionButton: { padding: '6px', background: 'var(--bg-body)', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', color: 'var(--text-secondary)' },
   cardBody: { padding: '20px', flex: 1 },
   projectDescription: { color: 'var(--text-secondary)', fontSize: '14px', margin: '0 0 20px 0', lineHeight: 1.6, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' },
   projectMeta: { display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' },
@@ -796,37 +810,33 @@ const styles = {
   progressFill: { height: '100%', borderRadius: '3px', transition: 'width 0.3s ease' },
   cardFooter: { padding: '16px 20px', borderTop: '1px solid var(--bg-body)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   viewDetailsButton: { padding: '8px 16px', background: 'var(--bg-body)', border: 'none', borderRadius: '8px', color: 'var(--text-secondary)', fontWeight: '500', cursor: 'pointer' },
-  projectId: { fontSize: '12px', color: 'var(--text-muted)' },
-  loading: { padding: '100px', textAlign: 'center', color: 'var(--text-muted)', gridColumn: '1 / -1' },
+  projectId: { fontSize: '12px', color: 'var(--text-secondary)' },
+  loading: { padding: '100px', textAlign: 'center', color: 'var(--text-secondary)', gridColumn: '1 / -1' },
   spinner: { width: '40px', height: '40px', border: '3px solid var(--bg-body)', borderTop: '3px solid var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 20px' },
   emptyState: { padding: '80px', textAlign: 'center', color: 'var(--text-muted)', gridColumn: '1 / -1' },
   pagination: { display: 'flex', justifyContent: 'center', padding: '20px', gap: '8px' },
-  pageButton: { padding: '8px', background: 'transparent', border: '1px solid var(--border-light)', borderRadius: '8px', cursor: 'pointer' },
+  pageButton: { padding: '8px', background: 'transparent', border: '1px solid var(--border-light)', borderRadius: '8px', cursor: 'pointer', color: 'var(--text-main)' },
   pageInfo: { display: 'flex', alignItems: 'center', color: 'var(--text-secondary)' },
   modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { background: 'white', borderRadius: '16px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflow: 'auto', boxShadow: 'var(--shadow-lg)' },
-  modalHeader: { padding: '24px', borderBottom: '1px solid var(--bg-body)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  modalTitle: { margin: 0, fontSize: '20px', fontWeight: '600' },
-  modalClose: { background: 'transparent', border: 'none', cursor: 'pointer' },
+  modal: { background: 'var(--bg-surface)', borderRadius: '16px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflow: 'auto', boxShadow: 'var(--shadow-lg)' },
+  modalHeader: { padding: '24px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  modalTitle: { margin: 0, fontSize: '20px', fontWeight: '600', color: 'var(--text-main)' },
+  modalClose: { background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' },
   modalBody: { padding: '24px' },
   formGroup: { marginBottom: '20px' },
   formRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' },
-  label: { display: 'block', marginBottom: '8px', fontWeight: '500' },
+  label: { display: 'block', marginBottom: '8px', fontWeight: '500', color: 'var(--text-main)' },
   required: { color: '#ef4444' },
-  input: { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-light)', outline: 'none' },
-  textarea: { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-light)', outline: 'none', resize: 'vertical' },
-  select: { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-light)', outline: 'none', background: 'white' },
-  modalFooter: { padding: '24px', borderTop: '1px solid var(--bg-body)', display: 'flex', justifyContent: 'flex-end', gap: '12px' },
-  cancelButton: { padding: '10px 20px', background: 'var(--bg-body)', border: '1px solid var(--border-light)', borderRadius: '8px', cursor: 'pointer' },
+  input: { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-light)', outline: 'none', background: 'var(--bg-body)', color: 'var(--text-main)' },
+  textarea: { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-light)', outline: 'none', resize: 'vertical', background: 'var(--bg-body)', color: 'var(--text-main)' },
+  select: { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-light)', outline: 'none', background: 'var(--bg-body)', color: 'var(--text-main)' },
+  modalFooter: { padding: '24px', borderTop: '1px solid var(--border-light)', display: 'flex', justifyContent: 'flex-end', gap: '12px' },
+  cancelButton: { padding: '10px 20px', background: 'var(--bg-body)', border: '1px solid var(--border-light)', borderRadius: '8px', cursor: 'pointer', color: 'var(--text-main)' },
   saveButton: { padding: '10px 20px', background: 'var(--primary)', border: 'none', borderRadius: '8px', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center' },
   warningMessage: { textAlign: 'center' },
   detailsSection: { padding: '10px 0' },
-  detailTitle: { fontSize: '20px', fontWeight: '600', marginBottom: '12px' },
-  detailDescription: { color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '24px' },
-  detailsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' },
-  detailItem: { fontSize: '14px', color: 'var(--text-main)' }
+  detailTitle: { margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600', color: 'var(--text-main)' },
+  detailDescription: { color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: 1.6 },
+  detailsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' },
+  detailItem: { background: 'var(--bg-body)', padding: '16px', borderRadius: '12px', fontSize: '14px', color: 'var(--text-secondary)' }
 };
-
-
-
-

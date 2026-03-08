@@ -21,6 +21,11 @@ export const adminService = {
     return response.data;
   },
 
+  importUsers: async (users) => {
+    const response = await api.post('/api/users/import.php', { users });
+    return response.data;
+  },
+
   getProjects: async () => {
     const response = await api.get('/api/projects/list.php');
     return response.data.projects;
@@ -41,6 +46,11 @@ export const adminService = {
     return response.data;
   },
 
+  importProjects: async (projects) => {
+    const response = await api.post('/api/projects/import.php', { projects });
+    return response.data;
+  },
+
   getTasks: async () => {
     const response = await api.get('/api/tasks/list.php');
     return response.data.tasks;
@@ -49,6 +59,16 @@ export const adminService = {
   getDashboardSummary: async () => {
     const response = await api.get('/api/dashboard/summary.php');
     return response.data.summary;
+  },
+
+  getTeamMood: async () => {
+    const response = await api.get('/api/ai/get-team-mood.php');
+    return response.data;
+  },
+
+  getProjectInertia: async () => {
+    const response = await api.get('/api/ai/get-inertia.php');
+    return response.data;
   },
 };
 

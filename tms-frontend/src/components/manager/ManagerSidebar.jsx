@@ -1,8 +1,8 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FolderKanban, CheckSquare, Activity, Settings, Briefcase } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, CheckSquare, Activity, Settings, Briefcase, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const ManagerSidebar = () => {
+const ManagerSidebar = ({ isCollapsed, toggleSidebar }) => {
   const menuItems = [
     { path: '/manager', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { path: '/manager/projects', label: 'Assigned Projects', icon: <FolderKanban size={20} /> },
@@ -12,41 +12,29 @@ const ManagerSidebar = () => {
   ];
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-header" style={{ padding: '0 1.5rem 2rem 1.5rem' }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          padding: '12px',
-          background: 'color-mix(in srgb, var(--primary) 10%, transparent)',
-          borderRadius: '8px',
-          color: 'var(--primary)',
-          fontWeight: '700'
-        }}>
-          <Briefcase size={24} />
-          <span>MANAGER PANEL</span>
-        </div>
-      </div>
-      <ul className="sidebar-menu">
+    <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`} style={{ width: isCollapsed ? '80px' : '280px', transition: 'width 0.3s ease', position: 'relative' }}>
+      <ul className="sidebar-menu" style={{ paddingTop: '1rem' }}>
         {menuItems.map((item, index) => (
-          <li key={index} style={{ marginBottom: '0.5rem' }}>
+          <li key={index} style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: isCollapsed ? 'center' : 'flex-start' }}>
             <NavLink
               to={item.path}
               end={item.path === '/manager'}
               className={({ isActive }) => isActive ? 'active' : ''}
+              title={isCollapsed ? item.label : ''}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '12px',
-                padding: '0.875rem 1.25rem',
+                padding: isCollapsed ? '0.875rem' : '0.875rem 1.25rem',
                 borderRadius: '8px',
                 textDecoration: 'none',
-                transition: 'all 0.3s ease'
+                transition: 'all 0.3s ease',
+                justifyContent: isCollapsed ? 'center' : 'flex-start',
+                width: isCollapsed ? 'fit-content' : '100%'
               }}
             >
               {item.icon}
-              <span style={{ fontWeight: '500' }}>{item.label}</span>
+              {!isCollapsed && <span style={{ fontWeight: '500', whiteSpace: 'nowrap' }}>{item.label}</span>}
             </NavLink>
           </li>
         ))}
